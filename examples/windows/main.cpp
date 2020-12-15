@@ -24,11 +24,17 @@ int main()
 	}
 
 
-	SDL_Delay(10 * 1000);  // Pause execution for 3000 milliseconds, for example
+	bool keepAlive = true;
+	while (keepAlive) {
+		SDL_Event event;
+		while (SDL_PollEvent(&event)) {
+			if (event.type == SDL_QUIT) {
+				keepAlive = false;
+			}
+		}
+	}
 
 	player->Stop();
 	SDL_Quit();
-
-
 	return 0;
 }

@@ -19,7 +19,8 @@ namespace sfplayer {
 		ffmpeg_impl_->Start();
 	}
 	void SFPlayer::Stop() {
-
+		ffmpeg_impl_->Stop();
+		render_->Stop();
 	}
 	void SFPlayer::Pause() {
 
