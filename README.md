@@ -7,3 +7,10 @@ cp ../third_party/ffmpeg/lib/windows/*.dll .
 cp ../third_party/sdl2/lib/windows/*.dll .
 ```
 
+## For MacOS
+
+```shell
+mkdir build
+cmake .. -G "Xcode"
+```
+
