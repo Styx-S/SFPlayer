@@ -1,9 +1,6 @@
 #pragma once
 
 #include "player_element_interface.h"
-extern "C" {
-#include <libavformat/avformat.h>
-}
 
 namespace sfplayer {
 	class IRenderInterface : public IPlayerElementInterface {

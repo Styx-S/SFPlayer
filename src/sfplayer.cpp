@@ -1,4 +1,3 @@
-#include "sfplayer-prefix.h"
 #include "sfplayer.h"
 
 namespace sfplayer {

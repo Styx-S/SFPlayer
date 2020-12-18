@@ -1,4 +1,3 @@
-#include "sfplayer-prefix.h"
 
 namespace sfplayer {
 	enum MediaFrameType {

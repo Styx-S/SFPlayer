@@ -93,12 +93,18 @@ file(GLOB SOURCES
 	"src/*.cpp" 
 	"src/**/*.cpp" 
 	"src/*.h"
+	"src/**/*.m"
+	"src/*.m"
+	"src/**/*.mm"
+	"src/*.mm"
 	"src/**/*.h" 
 	"include/*.h"
 	"include/**/*.h")
 
 
 add_executable(${PROJECT_NAME} ${SFPlayer_SOURCE_DIR}/examples/desktop/main.cpp ${SOURCES})
+
+target_precompile_headers(${PROJECT_NAME} PRIVATE ${SFPlayer_SRC_DIR}/sfplayer-prefix.h)
 
 ### Link ###
 link_directories(${FFMPEG_LIBS_DIR})

@@ -3,13 +3,6 @@
 #include "render.h"
 #include <thread>
 
-extern "C" {
-#include <libavformat/avformat.h>
-#include <libavcodec/avcodec.h>
-#include <libswresample/swresample.h>
-#include <libswscale/swscale.h>
-}
-
 namespace sfplayer {
 	class FFMpegImpl : IPlayerElementInterface {
 	public:

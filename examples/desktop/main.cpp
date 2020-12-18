@@ -1,17 +1,10 @@
-#include "sfplayer-prefix.h"
-#include <cstdio>
-
 #include "render.h"
 #include "sfplayer.h"
-
-extern "C" {
-#include <libavformat/avformat.h>
-}
 
 int main()
 {
 
-	SDL_Init(SDL_INIT_AUDIO || SDL_INIT_VIDEO || SDL_INIT_EVENTS);
+	SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 
 	std::shared_ptr<sfplayer::SFPlayer> player = std::make_shared<sfplayer::SFPlayer>();
 	std::shared_ptr<sfplayer::Render> render = std::make_shared<sfplayer::Render>();

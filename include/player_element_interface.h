@@ -1,5 +1,4 @@
 #pragma once
-#include "sfplayer-prefix.h"
 namespace sfplayer {
 	class IPlayerElementInterface {
 		virtual void Start() = 0;

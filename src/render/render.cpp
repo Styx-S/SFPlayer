@@ -1,4 +1,3 @@
-#include "sfplayer-prefix.h"
 #include "render.h"
 
 #include <functional>

@@ -1,14 +1,5 @@
 #include "ffmpeg_impl.h"
 
-extern "C" {
-#include <libavformat/avformat.h>
-#include <libavcodec/avcodec.h>
-#include <libswresample/swresample.h>
-#include <libswscale/swscale.h>
-#include <libavutil/imgutils.h>
-}
-
-
 namespace sfplayer {
 	FFMpegImpl::FFMpegImpl() {
 		av_log_set_level(AV_LOG_DEBUG);
