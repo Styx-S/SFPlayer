@@ -94,7 +94,10 @@ namespace sfplayer {
                 
                 avcodec_send_packet(audio_codec_context_, packet->packet_);
                 AVFrame *srcFrame = av_frame_alloc();
-                avcodec_receive_frame(audio_codec_context_, srcFrame);
+                int ret = avcodec_receive_frame(audio_codec_context_, srcFrame);
+				if (ret < 0) {
+					continue;
+				}
                 if (first_audio_frame_) {
                     first_audio_frame_ = false;
                     std::shared_ptr<RenderParameter> renderPar = std::make_shared<RenderParameter>();
