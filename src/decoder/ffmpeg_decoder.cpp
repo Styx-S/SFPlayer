@@ -19,7 +19,7 @@ namespace sfplayer {
         AVCodec *codec = avcodec_find_decoder(decoderPar->audio_codecpar->codec_id);
         if (!codec) {
             printf("find audio decoder error\n");
-            return false;
+			return;
         }
         audio_codec_context_ = avcodec_alloc_context3(codec);
         avcodec_parameters_to_context(audio_codec_context_, decoderPar->audio_codecpar);
@@ -29,7 +29,7 @@ namespace sfplayer {
         codec = avcodec_find_decoder(decoderPar->video_codecpar->codec_id);
         if (!codec) {
             printf("find video decoder error\n");
-            return false;
+			return;
         }
         video_codec_context_ = avcodec_alloc_context3(codec);
         avcodec_parameters_to_context(video_codec_context_, decoderPar->video_codecpar);
@@ -57,8 +57,6 @@ namespace sfplayer {
             AV_PIX_FMT_YUV420P,
             SWS_BILINEAR,
             NULL, NULL, NULL);
-
-        return true;
     }
 
     bool FFmpegDeocder::Start() {
@@ -74,6 +72,7 @@ namespace sfplayer {
         audio_worker_ = nullptr;
         video_worker_->join();
         video_worker_ = nullptr;
+		return true;
     }
 
     void FFmpegDeocder::PushPacket(std::shared_ptr<MediaPacket> packet) {

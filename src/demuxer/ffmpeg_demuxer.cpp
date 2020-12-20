@@ -16,12 +16,12 @@ namespace sfplayer {
         int ret = avformat_open_input(&fmt_ctx_, playPar->play_url.c_str(), NULL, NULL);
         if (ret < 0) {
             printf("open input error\n");
-            return false;
+			return;
         }
         ret = avformat_find_stream_info(fmt_ctx_, NULL);
         if (ret < 0) {
             printf("find stream info error\n");
-            return false;
+			return;
         }
         
         // 根据读取到的信息向后传输参数
