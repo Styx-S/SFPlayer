@@ -10,50 +10,68 @@ namespace sfplayer {
 
 
 	Render::~Render() {
+        SDL_DestroyTexture(texture_);
+        SDL_DestroyRenderer(render_);
+        SDL_DestroyWindow(window_);
 	}
 
-	void Render::Start() {
-		// ª≠√Ê‰÷»æ
+    void Render::TransportParameter(std::shared_ptr<Parameter> p) {
+        if (p->type != ParameterType::render) {
+            return;
+        }
+        std::shared_ptr<RenderParameter> renderPar = std::static_pointer_cast<RenderParameter>(p);
+        
+        SDL_AudioSpec spec;
+        spec.freq = renderPar->smaple_rate;
+        spec.format = AUDIO_S16SYS;
+        spec.channels = renderPar->channel;
+        spec.silence = 0;
+        spec.samples = renderPar->sample_buffer;
+        spec.callback = ReadAudioFrameCallback;
+        spec.userdata = this;
+
+        if (SDL_OpenAudio(&spec, NULL) < 0) {
+            printf("can't open audio.\n");
+            return;
+        }
+        SDL_PauseAudio(0);
+    }
+
+	bool Render::Start() {
 		window_ = SDL_CreateWindow("SFPlayer", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
 		render_ = SDL_CreateRenderer(window_, -1, SDL_RENDERER_ACCELERATED || SDL_RENDERER_PRESENTVSYNC);
-		// “Ù∆µ‰÷»æ
-		SDL_AudioSpec spec;
-		spec.freq = 48000;
-		spec.format = AUDIO_S16SYS;
-		spec.channels = 1;
-		spec.silence = 0;
-		spec.samples = 1024;
-		spec.callback = ReadAudioFrameCallback;
-		spec.userdata = this;
-
-		if (SDL_OpenAudio(&spec, NULL) < 0) {
-			printf("can't open audio.\n");
-			return;
-		} 
-		SDL_PauseAudio(0);
+        
+        return true;
 	}
 
-	void Render::Stop() {
-		SDL_DestroyWindow(window_);
+	bool Render::Stop() {
+        return true;
 	}
 
-	void Render::pushAudioFrame(uint8_t **pcm_data) {
+	void Render::pushAudioFrame(std::shared_ptr<MediaFrame> frame) {
 		std::lock_guard<std::mutex> lock(audio_queue_mutex_);
-		audio_queue_.push(pcm_data);
+		audio_queue_.push(frame);
 	}
 
-	void Render::pushVideoFrame(uint8_t *dst_data[4], int dst_linesize[4], float width, float height) {
+	void Render::pushVideoFrame(std::shared_ptr<MediaFrame> frame) {
 		if (!texture_) {
-			texture_ = SDL_CreateTexture(render_, SDL_PIXELFORMAT_YV12, SDL_TEXTUREACCESS_TARGET, width, height);
+            //SDL_RenderSetLogicalSize(render_, frame->frame_->width, frame->frame_->height);
+			texture_ = SDL_CreateTexture(render_, SDL_PIXELFORMAT_YV12, SDL_TEXTUREACCESS_TARGET, frame->frame_->width, frame->frame_->height);
 		}
-		printf("render frame");
+		printf("render frame, last:%ld", video_queue_.size());
 		SDL_SetRenderDrawColor(render_, 0x11, 0x11, 0x11, 0xff);
 		SDL_RenderClear(render_);
-		SDL_UpdateYUVTexture(texture_, NULL, dst_data[0], dst_linesize[0], dst_data[1], dst_linesize[1], dst_data[2], dst_linesize[2]);
+		SDL_UpdateYUVTexture(texture_,
+                             NULL,
+                             frame->frame_->data[0],
+                             frame->frame_->linesize[0],
+                             frame->frame_->data[1],
+                             frame->frame_->linesize[1],
+                             frame->frame_->data[2],
+                             frame->frame_->linesize[2]);
 		SDL_RenderCopy(render_, texture_, NULL, NULL);
 		SDL_RenderPresent(render_);
 		SDL_Delay(15);
-		av_freep(dst_data);
 	}
 
 	void Render::ReadAudioFrameCallback(void *udata, Uint8 *stream, int len) {
@@ -61,10 +79,10 @@ namespace sfplayer {
 		SDL_memset(stream, 0, len);
 		std::lock_guard<std::mutex> lock(render->audio_queue_mutex_);
 		if (render->audio_queue_.size() > 0) {
-			uint8_t **data = render->audio_queue_.front();
+			std::shared_ptr<MediaFrame> frame = render->audio_queue_.front();
 			render->audio_queue_.pop();
-			printf("render audio");
-			SDL_MixAudio(stream, data[0], 2112, SDL_MIX_MAXVOLUME);
+			printf("render audio, last: %ld\n", render->audio_queue_.size());
+			SDL_MixAudio(stream, frame->audio_data, frame->audio_data_size, SDL_MIX_MAXVOLUME);
 		}
 	}
 }

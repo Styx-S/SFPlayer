@@ -1,24 +1,37 @@
 #include "sfplayer.h"
 
+#include "ffmpeg_decoder.h"
+#include "parameter.h"
+
 namespace sfplayer {
 	SFPlayer::SFPlayer() {
-		ffmpeg_impl_ = std::make_shared<FFMpegImpl>();
+        demuxer_ = std::make_shared<FFmpegDemuxer>();
+        decoder_ = std::make_shared<FFmpegDeocder>();
+        
+        demuxer_->SetOutput(decoder_);
 	}
 
 	SFPlayer::~SFPlayer() {
-		
+        demuxer_ = nullptr;
+        decoder_ = nullptr;
+        render_ = nullptr;
 	}
 
 	bool SFPlayer::Play(std::string url) {
-		return ffmpeg_impl_->Play(url);
+        play_parameter_ = std::make_shared<PlayParameter>();
+        play_parameter_->play_url = url;
+        demuxer_->TransportParameter(play_parameter_);
+        return true;
 	}
 
 	void SFPlayer::Start() {
+        demuxer_->Start();
+        decoder_->Start();
 		render_->Start();
-		ffmpeg_impl_->Start();
 	}
 	void SFPlayer::Stop() {
-		ffmpeg_impl_->Stop();
+        demuxer_->Stop();
+        decoder_->Stop();
 		render_->Stop();
 	}
 	void SFPlayer::Pause() {
@@ -33,6 +46,6 @@ namespace sfplayer {
 
 	void SFPlayer::SetRender(std::shared_ptr<IRenderInterface> render) {
 		render_ = render;
-		ffmpeg_impl_->SetRenderOutput(render);
+        decoder_->SetRender(render);
 	}
 }

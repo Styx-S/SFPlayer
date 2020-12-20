@@ -6,6 +6,8 @@
 
 #include <string>
 #include <queue>
+#include <thread>
+#include <mutex>
 
 extern "C" {
 #include <libavformat/avformat.h>

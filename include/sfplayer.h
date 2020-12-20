@@ -1,9 +1,10 @@
 #pragma once
 
+#include "ffmpeg_demuxer.h"
+#include "decoder_interface.h"
 #include "render_interface.h"
-#include "ffmpeg_impl.h"
 
-
+class PlayParameter;
 namespace sfplayer {
 	class SFPlayer {
 	public:
@@ -19,8 +20,11 @@ namespace sfplayer {
 
 		void SetRender(std::shared_ptr<IRenderInterface> render);
 	private:
-		std::shared_ptr<FFMpegImpl> ffmpeg_impl_;
+		std::shared_ptr<FFmpegDemuxer> demuxer_;
+        std::shared_ptr<IDecoderInterface> decoder_;
 		std::shared_ptr<IRenderInterface> render_;
+        
+        std::shared_ptr<PlayParameter> play_parameter_;
 	};
 }
 

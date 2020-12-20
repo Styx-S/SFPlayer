@@ -75,12 +75,11 @@ set(SFPlayer_SRC_DIR ${SFPlayer_SOURCE_DIR}/src)
 set(SFPlayer_INCLUDE_DIR ${SFPlayer_SOURCE_DIR}/include)
 
 include_directories(${SFPlayer_INCLUDE_DIR})
-include_directories(${SFPlayer_INCLUDE_DIR}/input)
-include_directories(${SFPlayer_INCLUDE_DIR}/demxuer)
-include_directories(${SFPlayer_INCLUDE_DIR}/decoder)
-include_directories(${SFPlayer_INCLUDE_DIR}/render)
 
 include_directories(${SFPlayer_SRC_DIR})
+include_directories(${SFPlayer_SRC_DIR}/parameter)
+include_directories(${SFPlayer_SRC_DIR}/demuxer)
+include_directories(${SFPlayer_SRC_DIR}/decoder)
 include_directories(${SFPlayer_SRC_DIR}/render)
 
 include_directories(${FFMPEG_INCLUDE_DIR})
