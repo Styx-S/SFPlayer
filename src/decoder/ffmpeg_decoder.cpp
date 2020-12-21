@@ -123,7 +123,7 @@ namespace sfplayer {
                 
                 frame->audio_data = frame->frame_->data[0];
                 frame->audio_data_size = frame->frame_->linesize[0];
-                render_->pushAudioFrame(frame);
+                render_->PushAudioFrame(frame);
             } else {
                 
             }
@@ -150,7 +150,7 @@ namespace sfplayer {
                 sws_scale(video_sws_context_, srcFrame->data, srcFrame->linesize, 0, video_codec_context_->height, frame->frame_->data, frame->frame_->linesize);
                 av_frame_free(&srcFrame);
                 
-                render_->pushVideoFrame(frame);
+                render_->PushVideoFrame(frame);
                 
             } else {
                 

@@ -10,7 +10,7 @@
 
 #include "player_element_interface.h"
 #include "media_struct.h"
-#include "render_interface.h"
+#include "render.h"
 
 namespace sfplayer {
     class IDecoderInterface : public IPlayerElementInterface {
@@ -22,11 +22,11 @@ namespace sfplayer {
         virtual bool Resume() { return false; }
         // 设置当前模块所需的参数
         virtual void TransportParameter(std::shared_ptr<Parameter> p) {}
-        virtual void SetRender(std::shared_ptr<IRenderInterface> render) { render_ = render; }
+        virtual void SetRender(std::shared_ptr<Render> render) { render_ = render; }
         
         virtual void PushPacket(std::shared_ptr<MediaPacket> packet) {}
     protected:
-        std::shared_ptr<IRenderInterface> render_;
+        std::shared_ptr<Render> render_;
     };
 }
 

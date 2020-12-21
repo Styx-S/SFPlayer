@@ -101,7 +101,7 @@ file(GLOB SOURCES
 	"include/**/*.h")
 
 
-add_executable(${PROJECT_NAME} ${SFPlayer_SOURCE_DIR}/examples/desktop/main.cpp ${SOURCES})
+add_executable(${PROJECT_NAME} ${SFPlayer_SRC_DIR}/platforms/desktop/main.cpp ${SOURCES})
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE ${SFPlayer_SRC_DIR}/sfplayer-prefix.h)
 

@@ -1,13 +1,11 @@
-#include "render.h"
+#include "sdl_render.h"
 #include "sfplayer.h"
 
 int main()
 {
-
-	SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS);
-
+    
 	std::shared_ptr<sfplayer::SFPlayer> player = std::make_shared<sfplayer::SFPlayer>();
-	std::shared_ptr<sfplayer::Render> render = std::make_shared<sfplayer::Render>();
+	std::shared_ptr<sfplayer::SDLRender> render = std::make_shared<sfplayer::SDLRender>();
 
 	player->SetRender(render);
 	if (player->Play("http://devimages.apple.com.edgekey.net/streaming/examples/bipbop_4x3/gear2/prog_index.m3u8")) {
@@ -16,18 +14,8 @@ int main()
 		printf("play url error");
 	}
 
-
-	bool keepAlive = true;
-	while (keepAlive) {
-		SDL_Event event;
-		while (SDL_PollEvent(&event)) {
-			if (event.type == SDL_QUIT) {
-				keepAlive = false;
-			}
-		}
-	}
-
+    render->WaitLoop();
 	player->Stop();
-	SDL_Quit();
+	
 	return 0;
 }

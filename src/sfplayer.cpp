@@ -44,7 +44,7 @@ namespace sfplayer {
 
 	}
 
-	void SFPlayer::SetRender(std::shared_ptr<IRenderInterface> render) {
+	void SFPlayer::SetRender(std::shared_ptr<Render> render) {
 		render_ = render;
         decoder_->SetRender(render);
 	}

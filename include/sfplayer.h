@@ -2,7 +2,7 @@
 
 #include "ffmpeg_demuxer.h"
 #include "decoder_interface.h"
-#include "render_interface.h"
+#include "render.h"
 
 class PlayParameter;
 namespace sfplayer {
@@ -18,11 +18,11 @@ namespace sfplayer {
 		void Resume();
 		void Seek(float seconds);
 
-		void SetRender(std::shared_ptr<IRenderInterface> render);
+		void SetRender(std::shared_ptr<Render> render);
 	private:
 		std::shared_ptr<FFmpegDemuxer> demuxer_;
         std::shared_ptr<IDecoderInterface> decoder_;
-		std::shared_ptr<IRenderInterface> render_;
+		std::shared_ptr<Render> render_;
         
         std::shared_ptr<PlayParameter> play_parameter_;
 	};
