@@ -2,13 +2,26 @@ cmake_minimum_required(VERSION 3.19)
 set(CMAKE_CXX_FLAGS "-std=c++11")
 
 project (SFPlayer)
+set(SFPlayer_SRC_DIR ${SFPlayer_SOURCE_DIR}/src)
 
+if(IOS)
+	message("---build for iOS---")
+	set(DESKTOP FALSE)
+elseif(APPLE)
+	message("---build for MacOS---")
+	set(DESKTOP TRUE)
+elseif(WIN32)
+	message("---build for Windows---")
+	set(DESKTOP TRUE)
+endif()
+
+if (WIN32)
 if(CMAKE_CL_64)
 	set(PLATFORM_64 TRUE)
 	message("64bit platform")
 else()
-	set(PLATFORM_64 FALSE)
-	message("32bit platform")
+	message(FATAL_ERROR "do not support 32 bit platform")
+endif()
 endif()
 
 ### FFMpeg ###
@@ -16,6 +29,8 @@ set(FFMPEG_DIR "${SFPlayer_SOURCE_DIR}/third_party/ffmpeg")
 set(FFMPEG_INCLUDE_DIR "${FFMPEG_DIR}/include")
 if(WIN32)
 	set(FFMPEG_LIBS_DIR "${FFMPEG_DIR}/lib/windows")
+elseif(IOS)
+	set(FFMPEG_LIBS_DIR "${FFMPEG_DIR}/lib/ios")
 elseif(APPLE)
 	set(FFMPEG_LIBS_DIR "${FFMPEG_DIR}/lib/osx")
 endif()
@@ -40,14 +55,64 @@ elseif(APPLE)
 	set(SDL2_LIBS_DIR "${SDL2_DIR}/lib/osx")
 endif()
 
-if(WIN32)
-set(SDL2_LIBS ${SDL2_LIBS_DIR}/SDL2.lib ${SDL2_LIBS_DIR}/SDL2main.lib)
-elseif(APPLE)
-set(SDL2_LIBS ${SDL2_LIBS_DIR}/libSDL2.a)
+if(DESKTOP)
+	if(WIN32)
+		set(SDL2_LIBS ${SDL2_LIBS_DIR}/SDL2.lib ${SDL2_LIBS_DIR}/SDL2main.lib)
+	elseif(APPLE)
+		set(SDL2_LIBS ${SDL2_LIBS_DIR}/libSDL2.a)
+	endif()
 endif()
 
+
+### Xcode ###
+if (APPLE)
+set(APP_BUNDLE_IDENTIFIER "cn.styxs.blog")
+set(PRODUCT_NAME ${PROJECT_NAME})
+set(EXECUTABLE_NAME ${PROJECT_NAME})
+set(MACOSX_BUNDLE_EXECUTABLE_NAME ${APP_BUNDLE_IDENTIFIER})
+set(MACOSX_BUNDLE_INFO_STRING ${APP_BUNDLE_IDENTIFIER})
+set(MACOSX_BUNDLE_GUI_IDENTIFIER ${APP_BUNDLE_IDENTIFIER})
+set(MACOSX_BUNDLE_BUNDLE_NAME ${PROJECT_NAME})
+set(MACOSX_BUNDLE_ICON_FILE "")
+set(MACOSX_BUNDLE_LONG_VERSION_STRING "1.0")
+set(MACOSX_BUNDLE_SHORT_VERSION_STRING "1.0")
+set(MACOSX_BUNDLE_BUNDLE_VERSION "1.0")
+set(MACOSX_BUNDLE_COPYRIGHT "SFPlayer")
+endif()
+
+### iOS ###
+if(IOS)
+set(OSX_SYS_LIBS 
+	"-framework AVFoundation"
+	"-framework AudioToolbox"
+	"-framework VideoToolbox"
+	"-framework CoreAudio"
+	"-framework CoreFoundation"
+	"-framework CoreGraphics"
+	"-framework CoreMedia"
+	"-framework CoreVideo"
+	"-framework UIKit"
+	"-framework IOKit"
+	"-framework MetalKit"
+	"-framework QuartzCore"
+	"-framework Security"
+	"libbz2.tbd"
+	"libiconv.2.4.0.tbd"
+	"liblzma.tbd"
+	"libz.1.1.3.tbd")
+set(IOS_PLATFORM_DIR ${SFPlayer_SRC_DIR}/platforms/ios)
+set(IOS_HEADER_FILES
+	${IOS_PLATFORM_DIR}/AppDelegate.h
+	${IOS_PLATFORM_DIR}/ViewController.h)
+set(IOS_SOURCE_FILES
+	${IOS_PLATFORM_DIR}/AppDelegate.m
+	${IOS_PLATFORM_DIR}/ViewController.m)
+set(IOS_RESOURCES
+	${IOS_PLATFORM_DIR}/Main.storyboard
+	${IOS_PLATFORM_DIR}/LaunchScreen.storyboard)
+
 ### MACOS ###
-if(APPLE)
+elseif(APPLE)
 set(OSX_SYS_LIBS 
 	"-framework AVFoundation"
 	"-framework AudioToolbox"
@@ -71,7 +136,6 @@ set(OSX_SYS_LIBS
 endif()
 
 ### include ###
-set(SFPlayer_SRC_DIR ${SFPlayer_SOURCE_DIR}/src)
 set(SFPlayer_INCLUDE_DIR ${SFPlayer_SOURCE_DIR}/include)
 
 include_directories(${SFPlayer_INCLUDE_DIR})
@@ -100,8 +164,11 @@ file(GLOB SOURCES
 	"include/*.h"
 	"include/**/*.h")
 
-
-add_executable(${PROJECT_NAME} ${SFPlayer_SRC_DIR}/platforms/desktop/main.cpp ${SOURCES})
+if(DESKTOP)
+	add_executable(${PROJECT_NAME} ${SFPlayer_SRC_DIR}/platforms/desktop/desktop.cpp ${SOURCES})
+elseif(IOS)
+	add_executable(${PROJECT_NAME} ${IOS_PLATFORM_DIR}/ios.m ${SOURCES} ${IOS_HEADER_FILES} ${IOS_SOURCE_FILES} ${IOS_RESOURCES})
+endif()
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE ${SFPlayer_SRC_DIR}/sfplayer-prefix.h)
 
@@ -115,5 +182,12 @@ target_link_libraries(${PROJECT_NAME}
 
 if(${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
 set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT "SFPlayer")
+endif()
+
+if(IOS)
+set_target_properties(${PROJECT_NAME} PROPERTIES
+	XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT "dwarf-with-dsym"
+	RESOURCE "${IOS_RESOURCES}"
+	MACOSX_BUNDLE_INFO_PLIST ${IOS_PLATFORM_DIR}/plist.in)
 endif()
 
