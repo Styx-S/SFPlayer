@@ -3,9 +3,14 @@
 #include "render.h"
 
 namespace sfplayer {
+
+    void checkInitSDL();
+    void checkQuitSDL();
     
     class SDLAudioRender : public IAudioRenderInterface {
     public:
+        SDLAudioRender();
+        ~SDLAudioRender();
         //IPlayerElementInterface
         bool Start() override;
         bool Stop() override;
@@ -24,6 +29,7 @@ namespace sfplayer {
 
     class SDLVideoRender : public IVideoRenderInterface {
     public:
+        SDLVideoRender();
         ~SDLVideoRender();
         //IPlayerElementInterface
         bool Start() override;

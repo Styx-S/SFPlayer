@@ -3,6 +3,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11")
 
 project (SFPlayer)
 set(SFPlayer_SRC_DIR ${SFPlayer_SOURCE_DIR}/src)
+set(SFPlayer_INCLUDE_DIR ${SFPlayer_SOURCE_DIR}/include)
 
 if(IOS)
 	message("---build for iOS---")
@@ -51,16 +52,16 @@ if(WIN32)
 	else()
 		set(SDL2_LIBS_DIR "${SDL2_DIR}/lib/windows/x86")
 	endif()
+elseif(IOS)
+	set(SDL2_LIBS_DIR "${SDL2_DIR}/lib/ios")
 elseif(APPLE)
 	set(SDL2_LIBS_DIR "${SDL2_DIR}/lib/osx")
 endif()
 
-if(DESKTOP)
-	if(WIN32)
-		set(SDL2_LIBS ${SDL2_LIBS_DIR}/SDL2.lib ${SDL2_LIBS_DIR}/SDL2main.lib)
-	elseif(APPLE)
-		set(SDL2_LIBS ${SDL2_LIBS_DIR}/libSDL2.a)
-	endif()
+if(WIN32)
+	set(SDL2_LIBS ${SDL2_LIBS_DIR}/SDL2.lib ${SDL2_LIBS_DIR}/SDL2main.lib)
+elseif(APPLE)
+	set(SDL2_LIBS ${SDL2_LIBS_DIR}/libSDL2.a)
 endif()
 
 
@@ -93,23 +94,36 @@ set(OSX_SYS_LIBS
 	"-framework CoreVideo"
 	"-framework UIKit"
 	"-framework IOKit"
+	"-framework Metal"
 	"-framework MetalKit"
 	"-framework QuartzCore"
 	"-framework Security"
+	### framework for SDL ###
+	"-framework CoreBluetooth"
+	"-framework OpenGLES"
+	"-framework GameController"
+	"-framework CoreMotion"
 	"libbz2.tbd"
 	"libiconv.2.4.0.tbd"
 	"liblzma.tbd"
 	"libz.1.1.3.tbd")
-set(IOS_PLATFORM_DIR ${SFPlayer_SRC_DIR}/platforms/ios)
+set(IOS_EXAMPLES_DIR ${SFPlayer_SOURCE_DIR}/examples/ios)
 set(IOS_HEADER_FILES
-	${IOS_PLATFORM_DIR}/AppDelegate.h
-	${IOS_PLATFORM_DIR}/ViewController.h)
+	${IOS_EXAMPLES_DIR}/AppDelegate.h
+	${IOS_EXAMPLES_DIR}/ViewController.h)
 set(IOS_SOURCE_FILES
-	${IOS_PLATFORM_DIR}/AppDelegate.m
-	${IOS_PLATFORM_DIR}/ViewController.m)
+	${IOS_EXAMPLES_DIR}/AppDelegate.m
+	${IOS_EXAMPLES_DIR}/ViewController.mm)
 set(IOS_RESOURCES
-	${IOS_PLATFORM_DIR}/Main.storyboard
-	${IOS_PLATFORM_DIR}/LaunchScreen.storyboard)
+	${IOS_EXAMPLES_DIR}/Main.storyboard
+	${IOS_EXAMPLES_DIR}/LaunchScreen.storyboard)
+
+set(IOS_PLATFORM_DIR ${SFPlayer_SRC_DIR}/platforms/ios)
+set(IOS_PLATFORM_FILES 
+	${IOS_PLATFORM_DIR}/metal_video_render.h
+	${IOS_PLATFORM_DIR}/metal_video_render.mm
+	${IOS_PLATFORM_DIR}/shader.metal)
+include_directories(${IOS_PLATFORM_DIR})
 
 ### MACOS ###
 elseif(APPLE)
@@ -122,6 +136,7 @@ set(OSX_SYS_LIBS
 	"-framework CoreGraphics"
 	"-framework CoreMedia"
 	"-framework CoreVideo"
+	"-framework Foundation"
 	"-framework ForceFeedback"
 	"-framework IOKit"
 	"-framework Carbon"
@@ -133,11 +148,10 @@ set(OSX_SYS_LIBS
 	"libiconv.2.4.0.tbd"
 	"liblzma.tbd"
 	"libz.1.1.3.tbd")
+include_directories(${IOS_PLATFORM_DIR})
 endif()
 
 ### include ###
-set(SFPlayer_INCLUDE_DIR ${SFPlayer_SOURCE_DIR}/include)
-
 include_directories(${SFPlayer_INCLUDE_DIR})
 
 include_directories(${SFPlayer_SRC_DIR})
@@ -165,9 +179,9 @@ file(GLOB SOURCES
 	"include/**/*.h")
 
 if(DESKTOP)
-	add_executable(${PROJECT_NAME} ${SFPlayer_SRC_DIR}/platforms/desktop/desktop.cpp ${SOURCES})
+	add_executable(${PROJECT_NAME} ${SFPlayer_SOURCE_DIR}/examples/desktop/desktop.cpp ${SOURCES} ${IOS_PLATFORM_FILES})
 elseif(IOS)
-	add_executable(${PROJECT_NAME} ${IOS_PLATFORM_DIR}/ios.m ${SOURCES} ${IOS_HEADER_FILES} ${IOS_SOURCE_FILES} ${IOS_RESOURCES})
+	add_executable(${PROJECT_NAME} ${IOS_EXAMPLES_DIR}/ios.m ${SOURCES} ${IOS_HEADER_FILES} ${IOS_SOURCE_FILES} ${IOS_RESOURCES} ${IOS_PLATFORM_FILES})
 endif()
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE ${SFPlayer_SRC_DIR}/sfplayer-prefix.h)
@@ -188,6 +202,6 @@ if(IOS)
 set_target_properties(${PROJECT_NAME} PROPERTIES
 	XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT "dwarf-with-dsym"
 	RESOURCE "${IOS_RESOURCES}"
-	MACOSX_BUNDLE_INFO_PLIST ${IOS_PLATFORM_DIR}/plist.in)
+	MACOSX_BUNDLE_INFO_PLIST ${IOS_EXAMPLES_DIR}/plist.in)
 endif()
 

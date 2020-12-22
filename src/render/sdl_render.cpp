@@ -2,20 +2,39 @@
 
 #include <functional>
 
+static bool g_isSDLInit = false;
+static int g_SDLUsecount = 0;
+
 namespace sfplayer {
+
+    void checkInitSDL() {
+        if (!g_isSDLInit) {
+            SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS);
+            g_isSDLInit = true;
+        }
+        g_SDLUsecount++;
+    }
+
+    void checkQuitSDL() {
+        g_SDLUsecount--;
+        if (g_SDLUsecount == 0) {
+            SDL_Quit();
+        }
+    }
+
 	const float width = 1600;
 	const float height = 900;
 	SDLRender::SDLRender() {
-        SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS);
+        checkInitSDL();
         audio_render_impl_ = std::make_shared<SDLAudioRender>();
         video_render_impl_ = std::make_shared<SDLVideoRender>();
 	}
 
 
 	SDLRender::~SDLRender() {
+        checkQuitSDL();
         audio_render_impl_ = nullptr;
         video_render_impl_ = nullptr;
-        SDL_Quit();
 	}
 
     void SDLRender::WaitLoop() {
@@ -32,6 +51,14 @@ namespace sfplayer {
 
 #pragma mark - SDLAudioRender
 
+    SDLAudioRender::SDLAudioRender() {
+        checkInitSDL();
+    }
+
+    SDLAudioRender::~SDLAudioRender() {
+        checkQuitSDL();
+    }
+
     void SDLAudioRender::TransportParameter(std::shared_ptr<Parameter> p) {
         if (p->type != ParameterType::render) {
             return;
@@ -47,8 +74,10 @@ namespace sfplayer {
         spec.callback = ReadAudioFrameCallback;
         spec.userdata = this;
 
+        // iOS: 必须调用这个函数，并且必须带上耳机才能听到声音
+        SDL_SetMainReady();
         if (SDL_OpenAudio(&spec, NULL) < 0) {
-            printf("can't open audio.\n");
+            printf("can't open audio. %s", SDL_GetError());
             return;
         }
         SDL_PauseAudio(0);
@@ -76,16 +105,21 @@ namespace sfplayer {
 		if (render->audio_queue_.size() > 0) {
 			std::shared_ptr<MediaFrame> frame = render->audio_queue_.front();
 			render->audio_queue_.pop();
-			printf("render audio, last: %ld\n", render->audio_queue_.size());
+			//printf("render audio, last: %ld\n", render->audio_queue_.size());
 			SDL_MixAudio(stream, frame->audio_data, frame->audio_data_size, SDL_MIX_MAXVOLUME);
 		}
 	}
 
 #pragma mark - SDLVideoRender
+    SDLVideoRender::SDLVideoRender() {
+        checkInitSDL();
+    }
+
     SDLVideoRender::~SDLVideoRender() {
         SDL_DestroyTexture(texture_);
         SDL_DestroyRenderer(render_);
         SDL_DestroyWindow(window_);
+        checkQuitSDL();
     }
 
     bool SDLVideoRender::Start() {
@@ -104,7 +138,7 @@ namespace sfplayer {
             //SDL_RenderSetLogicalSize(render_, frame->frame_->width, frame->frame_->height);
             texture_ = SDL_CreateTexture(render_, SDL_PIXELFORMAT_YV12, SDL_TEXTUREACCESS_TARGET, frame->frame_->width, frame->frame_->height);
         }
-        printf("render frame, last:%ld", video_queue_.size());
+        //printf("render frame, last:%ld", video_queue_.size());
         SDL_SetRenderDrawColor(render_, 0x11, 0x11, 0x11, 0xff);
         SDL_RenderClear(render_);
         SDL_UpdateYUVTexture(texture_,

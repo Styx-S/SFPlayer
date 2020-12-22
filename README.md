@@ -17,6 +17,6 @@ cmake -B build -G Xcode
 ```
 cmake -G Xcode -B build \
     -DCMAKE_SYSTEM_NAME=iOS \
-    -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
+    -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0
 ```
 
