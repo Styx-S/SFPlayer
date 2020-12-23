@@ -45,7 +45,7 @@
 }
 
 - (void)viewDidAppear:(BOOL)animated {
-    _player->Play("http://3954.liveplay.myqcloud.com/live/3954_490764427_1024p.flv?bizid=3954&txSecret=5826a078684a93a09310d7053063756d&txTime=5feb0c51&uid=0&fromdj=egame_official&_qedj_t=Bhh5o4Wd%2FYUq2qvi7v0Y%2Fg3Itv0HDV6qCBcQASYUNDkwNzY0NDI3XzE2MDg2MzQ4MzEyX%2BIQHkxWHGRCLTVDMXNMQUFCYW5IQXlEN2NGQUc0Rk53eGhmDmVnYW1lX29mZmljaWFscASGK3BnZ19saXZlX3JlYWRfaWZjX210X3N2ci5lbnRyeV9oNV9saXZlX3Jvb22WBzkuOS45LjmmDjIyMy45OS4yMTUuMTc4vMYA1gDs8A8C");
+    _player->Play("http://devimages.apple.com.edgekey.net/streaming/examples/bipbop_4x3/gear2/prog_index.m3u8");
     _player->Start();
 }
 

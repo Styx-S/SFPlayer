@@ -39,9 +39,11 @@ private:
     __strong id<MTLCommandQueue> render_command_queue_;
     __strong id<MTLRenderPipelineState> render_pipeline_state_;
     __strong id<MTLBuffer> render_vertex_buffer_;
+    __strong id<MTLBuffer> convert_matrix_buffer_;
     __strong SFPMTKViewDelegateProxy *render_view_delegate_;
     
     void InitMetal();
+    bool SetFragmentTexture(id<MTLRenderCommandEncoder> encoder);
     
     std::shared_ptr<MediaFrame> last_frame_;
 };
