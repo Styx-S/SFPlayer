@@ -32,7 +32,7 @@ public:
     int GetCachedVideoSize() override { return -1; }
     
     MTKView *GetRenderView();
-    void Draw();
+    void _DrawNow();
 private:
     __strong MTKView *render_view_;
     __strong id<MTLDevice> render_device_;
@@ -42,7 +42,6 @@ private:
     __strong SFPMTKViewDelegateProxy *render_view_delegate_;
     
     void InitMetal();
-    void RenderFrame(std::shared_ptr<MediaFrame> frame);
     
     std::shared_ptr<MediaFrame> last_frame_;
 };

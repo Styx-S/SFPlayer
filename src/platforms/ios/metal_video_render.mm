@@ -58,7 +58,7 @@ MTKView* SFPMetalVideoRender::GetRenderView() {
 }
 
 - (void)drawInMTKView:(MTKView *)view {
-    _impl->Draw();
+    _impl->_DrawNow();
 }
 
 - (void)mtkView:(MTKView *)view drawableSizeWillChange:(CGSize)size {
@@ -108,7 +108,8 @@ void SFPMetalVideoRender::InitMetal() {
     render_vertex_buffer_ = [render_device_ newBufferWithBytes:vertices length:sizeof(vertices) options:MTLResourceOptionCPUCacheModeDefault];
 }
 
-void SFPMetalVideoRender::RenderFrame(std::shared_ptr<MediaFrame> frame) {
+void SFPMetalVideoRender::_DrawNow() {
+    std::shared_ptr<MediaFrame> frame = last_frame_;
     id<MTLCommandBuffer> commandBuffer = [render_command_queue_ commandBuffer];
     id<MTLRenderCommandEncoder> renderCommandEncoder = [commandBuffer renderCommandEncoderWithDescriptor:render_view_.currentRenderPassDescriptor];
     [renderCommandEncoder setRenderPipelineState:render_pipeline_state_];
@@ -119,9 +120,4 @@ void SFPMetalVideoRender::RenderFrame(std::shared_ptr<MediaFrame> frame) {
     [commandBuffer presentDrawable:render_view_.currentDrawable];
     [commandBuffer commit];
 }
-
-void SFPMetalVideoRender::Draw() {
-    RenderFrame(last_frame_);
-}
-
 

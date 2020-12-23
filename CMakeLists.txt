@@ -122,7 +122,11 @@ set(IOS_PLATFORM_DIR ${SFPlayer_SRC_DIR}/platforms/ios)
 set(IOS_PLATFORM_FILES 
 	${IOS_PLATFORM_DIR}/metal_video_render.h
 	${IOS_PLATFORM_DIR}/metal_video_render.mm
+	)
+set(METAL_SHADER
 	${IOS_PLATFORM_DIR}/shader.metal)
+set_source_files_properties(${METAL_SHADER} PROPERTIES LANGUAGE METAL)
+
 include_directories(${IOS_PLATFORM_DIR})
 
 ### MACOS ###
@@ -181,7 +185,7 @@ file(GLOB SOURCES
 if(DESKTOP)
 	add_executable(${PROJECT_NAME} ${SFPlayer_SOURCE_DIR}/examples/desktop/desktop.cpp ${SOURCES} ${IOS_PLATFORM_FILES})
 elseif(IOS)
-	add_executable(${PROJECT_NAME} ${IOS_EXAMPLES_DIR}/ios.m ${SOURCES} ${IOS_HEADER_FILES} ${IOS_SOURCE_FILES} ${IOS_RESOURCES} ${IOS_PLATFORM_FILES})
+	add_executable(${PROJECT_NAME} ${IOS_EXAMPLES_DIR}/ios.m ${SOURCES} ${IOS_HEADER_FILES} ${IOS_SOURCE_FILES} ${IOS_RESOURCES} ${IOS_PLATFORM_FILES} ${METAL_SHADER})
 endif()
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE ${SFPlayer_SRC_DIR}/sfplayer-prefix.h)
