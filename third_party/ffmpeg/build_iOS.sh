@@ -8,7 +8,7 @@ if [[ $FFMPEG_VERSION != "" ]]; then
   FF_VERSION=$FFMPEG_VERSION
 fi
 SOURCE="FFMpeg"
-FAT="FFmpeg-iOS"
+FAT="lib/ios"
 
 SCRATCH="scratch"
 # must be an absolute path

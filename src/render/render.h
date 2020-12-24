@@ -14,7 +14,7 @@ namespace sfplayer {
         virtual bool Resume() { return false; }
         
         virtual void TransportParameter(std::shared_ptr<Parameter> p) {}
-        virtual void PushAudioFrame(std::shared_ptr<MediaFrame> frame) = 0;
+        virtual bool PushAudioFrame(std::shared_ptr<MediaFrame> frame) = 0;
         virtual int GetCachedAudioSize() { return -1; }
     };
 
@@ -56,8 +56,8 @@ namespace sfplayer {
             video_render_impl_->TransportParameter(p);
         }
 
-        virtual void PushAudioFrame(std::shared_ptr<MediaFrame> frame) {
-            audio_render_impl_->PushAudioFrame(frame);
+        virtual bool PushAudioFrame(std::shared_ptr<MediaFrame> frame) {
+            return audio_render_impl_->PushAudioFrame(frame);
         }
         virtual void PushVideoFrame(std::shared_ptr<MediaFrame> frame) {
             video_render_impl_->PushVideoFrame(frame);

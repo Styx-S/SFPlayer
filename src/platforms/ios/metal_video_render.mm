@@ -56,7 +56,6 @@ MTKView* SFPMetalVideoRender::GetRenderView() {
     }
     return self;
 }
-
 - (void)drawInMTKView:(MTKView *)view {
     _impl->_DrawNow();
 }
@@ -68,14 +67,12 @@ MTKView* SFPMetalVideoRender::GetRenderView() {
 @end
 
 void SFPMetalVideoRender::InitMetal() {
-    render_view_delegate_ = [[SFPMTKViewDelegateProxy alloc] initWithImpl:this];
     if (render_view_) {
         render_device_ = render_view_.device;
     } else {
         render_device_ = MTLCreateSystemDefaultDevice();
         render_view_ = [[MTKView alloc] initWithFrame:CGRectZero device:render_device_];
     }
-    render_view_.delegate = render_view_delegate_;
     render_command_queue_ = [render_device_ newCommandQueue];
     // pipeline
     id<MTLLibrary> library = [render_device_ newDefaultLibrary];
@@ -116,6 +113,9 @@ void SFPMetalVideoRender::InitMetal() {
         .offset = { 0, -0.5, -0.5 }
     };
     convert_matrix_buffer_ = [render_device_ newBufferWithBytes:&converter length:sizeof(converter) options:MTLResourceOptionCPUCacheModeDefault];
+    
+    render_view_delegate_ = [[SFPMTKViewDelegateProxy alloc] initWithImpl:this];
+    render_view_.delegate = render_view_delegate_;
 }
 
 bool SFPMetalVideoRender::SetFragmentTexture(id<MTLRenderCommandEncoder> encoder) {

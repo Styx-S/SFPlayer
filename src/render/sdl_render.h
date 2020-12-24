@@ -1,6 +1,7 @@
 #pragma once
 
 #include "render.h"
+#include "ring_buffer.h"
 
 namespace sfplayer {
 
@@ -18,10 +19,10 @@ namespace sfplayer {
         bool Resume() override { return false; }
         
         void TransportParameter(std::shared_ptr<Parameter> p) override;
-        void PushAudioFrame(std::shared_ptr<MediaFrame> frame) override;
+        bool PushAudioFrame(std::shared_ptr<MediaFrame> frame) override;
         int GetCachedAudioSize() override { return -1; }
     private:
-        std::queue<std::shared_ptr<MediaFrame>> audio_queue_;
+        RingBuffer<MediaFrame> audio_buffer_;
         std::mutex audio_queue_mutex_;
 
         static void ReadAudioFrameCallback(void *udata, Uint8 *stream, int len);
@@ -45,7 +46,7 @@ namespace sfplayer {
         SDL_Renderer *render_ = NULL;
         SDL_Texture *texture_ = NULL;
         
-        std::queue<std::shared_ptr<MediaFrame>> video_queue_;
+        RingBuffer<MediaFrame> video_buffer_;
     };
 
 

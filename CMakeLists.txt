@@ -163,6 +163,7 @@ include_directories(${SFPlayer_SRC_DIR}/parameter)
 include_directories(${SFPlayer_SRC_DIR}/demuxer)
 include_directories(${SFPlayer_SRC_DIR}/decoder)
 include_directories(${SFPlayer_SRC_DIR}/render)
+include_directories(${SFPlayer_SRC_DIR}/components)
 
 include_directories(${FFMPEG_INCLUDE_DIR})
 include_directories(${SDL2_INCLUDE_DIR})

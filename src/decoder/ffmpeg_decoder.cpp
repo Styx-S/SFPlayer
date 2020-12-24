@@ -9,6 +9,12 @@
 
 namespace sfplayer {
 
+    FFmpegDeocder::FFmpegDeocder()
+    : audio_packet_buffer(100)
+    , video_packet_buffer(100) {
+        
+    }
+
     void FFmpegDeocder::TransportParameter(std::shared_ptr<Parameter> p) {
         if (p->type != ParameterType::decoder) {
             return;
@@ -76,26 +82,27 @@ namespace sfplayer {
     }
 
     void FFmpegDeocder::PushPacket(std::shared_ptr<MediaPacket> packet) {
-        std::lock_guard<std::mutex> lock(state_mutex_);
+        if (!(packet && packet->packet_)) {
+            return;
+        }
+        
         if (packet->type == MediaType::audio) {
-            audio_packet_queue_.push(packet);
+            audio_packet_buffer.WaitAndWrite(packet);
         }
         else if (packet->type == MediaType::video) {
-            video_packet_queue_.push(packet);
+            video_packet_buffer.WaitAndWrite(packet);
         }
     }
 
     void FFmpegDeocder::DecodeAudio() {
         while (running_) {
-            std::lock_guard<std::mutex> lock(state_mutex_);
-            if (audio_packet_queue_.size() > 0) {
-                std::shared_ptr<MediaPacket> packet = audio_packet_queue_.front();
-                audio_packet_queue_.pop();
+            std::shared_ptr<MediaPacket> packet = audio_packet_buffer.WaitAndRead();
                 
                 avcodec_send_packet(audio_codec_context_, packet->packet_);
                 AVFrame *srcFrame = av_frame_alloc();
                 int ret = avcodec_receive_frame(audio_codec_context_, srcFrame);
 				if (ret < 0) {
+                    av_frame_free(&srcFrame);
 					continue;
 				}
                 if (first_audio_frame_) {
@@ -124,18 +131,12 @@ namespace sfplayer {
                 frame->audio_data = frame->frame_->data[0];
                 frame->audio_data_size = frame->frame_->linesize[0];
                 render_->PushAudioFrame(frame);
-            } else {
-                
-            }
         }
     }
 
     void FFmpegDeocder::DecodeVideo() {
         while (running_) {
-            std::lock_guard<std::mutex> lock(state_mutex_);
-            if (video_packet_queue_.size() > 0) {
-                std::shared_ptr<MediaPacket> packet = video_packet_queue_.front();
-                video_packet_queue_.pop();
+            std::shared_ptr<MediaPacket> packet = video_packet_buffer.WaitAndRead();
                 avcodec_send_packet(video_codec_context_, packet->packet_);
             
                 AVFrame *srcFrame = av_frame_alloc();
@@ -151,10 +152,6 @@ namespace sfplayer {
                 av_frame_free(&srcFrame);
                 
                 render_->PushVideoFrame(frame);
-                
-            } else {
-                
-            }
         }
     }
 

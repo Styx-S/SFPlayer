@@ -9,10 +9,12 @@
 #define ffmpeg_decoder_h
 
 #include "decoder_interface.h"
+#include "ring_buffer.h"
 
 namespace sfplayer {
     class FFmpegDeocder : public IDecoderInterface {
     public:
+        FFmpegDeocder();
         // IPlayerElementInterface
         bool Start() override;
         bool Stop() override;
@@ -30,8 +32,8 @@ namespace sfplayer {
         
         std::shared_ptr<std::thread> audio_worker_;
         std::shared_ptr<std::thread> video_worker_;
-        std::queue<std::shared_ptr<MediaPacket>> audio_packet_queue_;
-        std::queue<std::shared_ptr<MediaPacket>> video_packet_queue_;
+        RingBuffer<MediaPacket> audio_packet_buffer;
+        RingBuffer<MediaPacket> video_packet_buffer;\
         
         bool first_audio_frame_ = true;
         

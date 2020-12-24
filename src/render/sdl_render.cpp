@@ -51,7 +51,8 @@ namespace sfplayer {
 
 #pragma mark - SDLAudioRender
 
-    SDLAudioRender::SDLAudioRender() {
+    SDLAudioRender::SDLAudioRender()
+    : audio_buffer_(20) {
         checkInitSDL();
     }
 
@@ -91,9 +92,8 @@ namespace sfplayer {
         return true;
 	}
 
-	void SDLAudioRender::PushAudioFrame(std::shared_ptr<MediaFrame> frame) {
-		std::lock_guard<std::mutex> lock(audio_queue_mutex_);
-		audio_queue_.push(frame);
+	bool SDLAudioRender::PushAudioFrame(std::shared_ptr<MediaFrame> frame) {
+        return audio_buffer_.WaitAndWrite(frame);
 	}
 
 	
@@ -101,17 +101,22 @@ namespace sfplayer {
 	void SDLAudioRender::ReadAudioFrameCallback(void *udata, Uint8 *stream, int len) {
 		SDLAudioRender *render = (SDLAudioRender *)udata;
 		SDL_memset(stream, 0, len);
-		std::lock_guard<std::mutex> lock(render->audio_queue_mutex_);
-		if (render->audio_queue_.size() > 0) {
-			std::shared_ptr<MediaFrame> frame = render->audio_queue_.front();
-			render->audio_queue_.pop();
+        std::shared_ptr<MediaFrame> frame = render->audio_buffer_.Read();
+        size_t i = render->audio_buffer_.GetCapacity();
+        if (i < 5)
+            printf("buffer remain:%zu\n", i);
+		if (frame) {
+            if (len != frame->audio_data_size) {
+                printf("len: %d, data size: %d\n", len, frame->audio_data_size);
+            }
 			//printf("render audio, last: %ld\n", render->audio_queue_.size());
 			SDL_MixAudio(stream, frame->audio_data, frame->audio_data_size, SDL_MIX_MAXVOLUME);
 		}
 	}
 
 #pragma mark - SDLVideoRender
-    SDLVideoRender::SDLVideoRender() {
+    SDLVideoRender::SDLVideoRender()
+    : video_buffer_(10) {
         checkInitSDL();
     }
 
