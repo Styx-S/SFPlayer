@@ -46,7 +46,7 @@ namespace sfplayer {
         audio_swr_context_ = swr_alloc_set_opts(NULL,
             audio_codec_context_->channel_layout,
             AV_SAMPLE_FMT_S16P,
-            1024,
+            audio_codec_context_->sample_rate,
             audio_codec_context_->channel_layout,
             audio_codec_context_->sample_fmt,
             audio_codec_context_->sample_rate,
@@ -105,15 +105,6 @@ namespace sfplayer {
                     av_frame_free(&srcFrame);
 					continue;
 				}
-                if (first_audio_frame_) {
-                    first_audio_frame_ = false;
-                    std::shared_ptr<RenderParameter> renderPar = std::make_shared<RenderParameter>();
-                    renderPar->smaple_rate = srcFrame->sample_rate;
-                    renderPar->channel = srcFrame->channels;
-                    renderPar->sample_buffer = srcFrame->nb_samples;
-                    render_->TransportParameter(renderPar);
-                }
-                
                 
                 int output_size = av_samples_get_buffer_size(NULL, audio_codec_context_->channels, 1024, AV_SAMPLE_FMT_S16, 1);
                 // TODO: 下面一段代码导致没法播放声音，但是我想知道为什么
@@ -129,7 +120,16 @@ namespace sfplayer {
                 av_frame_free(&srcFrame);
                 
                 frame->audio_data = frame->frame_->data[0];
-                frame->audio_data_size = frame->frame_->linesize[0];
+                frame->audio_data_size = av_samples_get_buffer_size(frame->frame_->linesize, frame->frame_->channels, frame->frame_->nb_samples, (AVSampleFormat)frame->frame_->format, 0);
+            
+            if (first_audio_frame_) {
+                first_audio_frame_ = false;
+                std::shared_ptr<RenderParameter> renderPar = std::make_shared<RenderParameter>();
+                renderPar->smaple_rate = frame->frame_->sample_rate;
+                renderPar->channel = frame->frame_->channels;
+                renderPar->sample_buffer = frame->frame_->nb_samples;
+                render_->TransportParameter(renderPar);
+            }
                 render_->PushAudioFrame(frame);
         }
     }

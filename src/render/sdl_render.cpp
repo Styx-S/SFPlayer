@@ -102,13 +102,7 @@ namespace sfplayer {
 		SDLAudioRender *render = (SDLAudioRender *)udata;
 		SDL_memset(stream, 0, len);
         std::shared_ptr<MediaFrame> frame = render->audio_buffer_.Read();
-        size_t i = render->audio_buffer_.GetCapacity();
-        if (i < 5)
-            printf("buffer remain:%zu\n", i);
 		if (frame) {
-            if (len != frame->audio_data_size) {
-                printf("len: %d, data size: %d\n", len, frame->audio_data_size);
-            }
 			//printf("render audio, last: %ld\n", render->audio_queue_.size());
 			SDL_MixAudio(stream, frame->audio_data, frame->audio_data_size, SDL_MIX_MAXVOLUME);
 		}
