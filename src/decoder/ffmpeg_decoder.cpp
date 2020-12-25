@@ -97,30 +97,30 @@ namespace sfplayer {
     void FFmpegDeocder::DecodeAudio() {
         while (running_) {
             std::shared_ptr<MediaPacket> packet = audio_packet_buffer.WaitAndRead();
-                
-                avcodec_send_packet(audio_codec_context_, packet->packet_);
-                AVFrame *srcFrame = av_frame_alloc();
-                int ret = avcodec_receive_frame(audio_codec_context_, srcFrame);
-				if (ret < 0) {
-                    av_frame_free(&srcFrame);
-					continue;
-				}
-                
-                int output_size = av_samples_get_buffer_size(NULL, audio_codec_context_->channels, 1024, AV_SAMPLE_FMT_S16, 1);
-                // TODO: 下面一段代码导致没法播放声音，但是我想知道为什么
-//                size_t len = output_size * 2 * 2;
-//                uint8_t *out_buffer = new uint8_t[len];
-//                memset(out_buffer, 0x0, len);
-//                swr_convert(audio_swr_context_, &out_buffer, output_size, (const uint8_t **)srcFrame->data, srcFrame->nb_samples);
-                std::shared_ptr<MediaFrame> frame = std::make_shared<MediaFrame>(MediaType::audio);
-                frame->frame_->channel_layout = srcFrame->channel_layout;
-                frame->frame_->sample_rate = audio_codec_context_->sample_rate;
-                frame->frame_->format = AV_SAMPLE_FMT_S16;
-                swr_convert_frame(audio_swr_context_, frame->frame_, srcFrame);
+            
+            avcodec_send_packet(audio_codec_context_, packet->packet_);
+            AVFrame *srcFrame = av_frame_alloc();
+            int ret = avcodec_receive_frame(audio_codec_context_, srcFrame);
+            if (ret < 0) {
                 av_frame_free(&srcFrame);
-                
-                frame->audio_data = frame->frame_->data[0];
-                frame->audio_data_size = av_samples_get_buffer_size(frame->frame_->linesize, frame->frame_->channels, frame->frame_->nb_samples, (AVSampleFormat)frame->frame_->format, 0);
+                continue;
+            }
+            
+            int output_size = av_samples_get_buffer_size(NULL, audio_codec_context_->channels, 1024, AV_SAMPLE_FMT_S16, 1);
+            // TODO: 下面一段代码导致没法播放声音，但是我想知道为什么
+            //                size_t len = output_size * 2 * 2;
+            //                uint8_t *out_buffer = new uint8_t[len];
+            //                memset(out_buffer, 0x0, len);
+            //                swr_convert(audio_swr_context_, &out_buffer, output_size, (const uint8_t **)srcFrame->data, srcFrame->nb_samples);
+            std::shared_ptr<MediaFrame> frame = std::make_shared<MediaFrame>(MediaType::audio);
+            frame->frame_->channel_layout = srcFrame->channel_layout;
+            frame->frame_->sample_rate = audio_codec_context_->sample_rate;
+            frame->frame_->format = AV_SAMPLE_FMT_S16;
+            swr_convert_frame(audio_swr_context_, frame->frame_, srcFrame);
+            av_frame_free(&srcFrame);
+            
+            frame->audio_data = frame->frame_->data[0];
+            frame->audio_data_size = av_samples_get_buffer_size(frame->frame_->linesize, frame->frame_->channels, frame->frame_->nb_samples, (AVSampleFormat)frame->frame_->format, 0);
             
             if (first_audio_frame_) {
                 first_audio_frame_ = false;
@@ -130,28 +130,28 @@ namespace sfplayer {
                 renderPar->sample_buffer = frame->frame_->nb_samples;
                 render_->TransportParameter(renderPar);
             }
-                render_->PushAudioFrame(frame);
+            render_->PushAudioFrame(frame);
         }
     }
 
     void FFmpegDeocder::DecodeVideo() {
         while (running_) {
             std::shared_ptr<MediaPacket> packet = video_packet_buffer.WaitAndRead();
-                avcodec_send_packet(video_codec_context_, packet->packet_);
+            avcodec_send_packet(video_codec_context_, packet->packet_);
             
-                AVFrame *srcFrame = av_frame_alloc();
-                int ret = avcodec_receive_frame(video_codec_context_, srcFrame);
-                
-                std::shared_ptr<MediaFrame> frame = std::make_shared<MediaFrame>(MediaType::video);
-                frame->frame_->width = srcFrame->width;
-                frame->frame_->height = srcFrame->height;
-                frame->frame_->format = AV_PIX_FMT_YUV420P;
-                av_freep(frame->frame_->data);
-                av_image_alloc(frame->frame_->data, frame->frame_->linesize, srcFrame->width, srcFrame->height, AV_PIX_FMT_YUV420P, 1);
-                sws_scale(video_sws_context_, srcFrame->data, srcFrame->linesize, 0, video_codec_context_->height, frame->frame_->data, frame->frame_->linesize);
-                av_frame_free(&srcFrame);
-                
-                render_->PushVideoFrame(frame);
+            AVFrame *srcFrame = av_frame_alloc();
+            int ret = avcodec_receive_frame(video_codec_context_, srcFrame);
+            
+            std::shared_ptr<MediaFrame> frame = std::make_shared<MediaFrame>(MediaType::video);
+            frame->frame_->width = srcFrame->width;
+            frame->frame_->height = srcFrame->height;
+            frame->frame_->format = AV_PIX_FMT_YUV420P;
+            av_freep(frame->frame_->data);
+            av_image_alloc(frame->frame_->data, frame->frame_->linesize, srcFrame->width, srcFrame->height, AV_PIX_FMT_YUV420P, 1);
+            sws_scale(video_sws_context_, srcFrame->data, srcFrame->linesize, 0, video_codec_context_->height, frame->frame_->data, frame->frame_->linesize);
+            av_frame_free(&srcFrame);
+            
+            render_->PushVideoFrame(frame);
         }
     }
 
