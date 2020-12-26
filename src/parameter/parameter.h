@@ -38,8 +38,10 @@ namespace sfplayer {
         // 视频
         AVCodecParameters *video_codecpar;
         AVRational video_framerate;
+        AVRational video_stream_timebase;
         // 音频
         AVCodecParameters *audio_codecpar;
+        AVRational audio_stream_timebase;
     };
 
     class RenderParameter : public Parameter {

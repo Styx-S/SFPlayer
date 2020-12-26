@@ -15,6 +15,8 @@ namespace sfplayer {
         explicit RingBuffer(size_t size);
         ~RingBuffer();
         
+        /* PlayerElement中不能使用WaitAndRead 会导致无法响应播放控制 */
+        /* 但是可以使用WaitAndWrite，因为播放控制是从前往后的，后面的组件仍然会进行消费*/
         
         bool Write(std::shared_ptr<T> t);
         std::shared_ptr<T> Read();
@@ -24,7 +26,17 @@ namespace sfplayer {
         void Clear();
         
         /// 注意先取个数，再Read或Write的用法不是线程安全的
-        size_t GetCapacity();
+        size_t GetLength();
+        
+        /* 需要和lock/unlock配合 */
+        
+        void UnsafeWrite(std::shared_ptr<T> t);
+        std::shared_ptr<T> UnsafeRead();
+        
+        std::shared_ptr<T> UnsafeFront();
+        void UnsafePop();
+        
+        size_t UnsafeGetLength();
         
     private:
         std::shared_ptr<T> *buffer;
@@ -34,11 +46,10 @@ namespace sfplayer {
         // 可读区域尾
         size_t tail_;
         
+    public:
         std::mutex mutex_;
         std::condition_variable cond_;
         
-        void _Write(std::shared_ptr<T> t);
-        std::shared_ptr<T> _Read();
     };
 
 
@@ -57,14 +68,14 @@ namespace sfplayer {
 
     // 由调用方保证可写和临界区
     template<typename T>
-    void RingBuffer<T>::_Write(std::shared_ptr<T> t) {
+    void RingBuffer<T>::UnsafeWrite(std::shared_ptr<T> t) {
         buffer[tail_++] = t;
         tail_ %= size_;
 }
 
     // 由调用方保证可读和临界区
     template<typename T>
-    std::shared_ptr<T> RingBuffer<T>::_Read() {
+    std::shared_ptr<T> RingBuffer<T>::UnsafeRead() {
         std::shared_ptr<T> t = buffer[head_];
         // 这里释放一下计数，否则需要到下一次使用这个位置时才释放
         buffer[head_] = nullptr;
@@ -74,10 +85,37 @@ namespace sfplayer {
     }
 
     template<typename T>
+    std::shared_ptr<T> RingBuffer<T>::UnsafeFront() {
+        if (head_ != tail_) {
+            return buffer[head_];
+        } else {
+            return nullptr;
+        }
+    }
+
+    template<typename T>
+    void RingBuffer<T>::UnsafePop() {
+        if (head_ != tail_) {
+            buffer[head_] = nullptr;
+            head_++;
+            head_ %= size_;
+        }
+    }
+
+    template<typename T>
+    size_t RingBuffer<T>::UnsafeGetLength() {
+        if (head_ <= tail_) {
+            return tail_ - head_;
+        } else {
+            return size_ - head_ + tail_;
+        }
+    }
+
+    template<typename T>
     bool RingBuffer<T>::Write(std::shared_ptr<T> t) {
         std::lock_guard<std::mutex> lock(mutex_);
         if (head_ != (tail_ + 1) % size_) {
-            _Write(t);
+            UnsafeWrite(t);
             cond_.notify_all();
             return true;
         } else {
@@ -92,7 +130,7 @@ namespace sfplayer {
             return head_ != (tail_ + 1 ) % size_;
         }));
         
-        _Write(t);
+        UnsafeWrite(t);
         cond_.notify_all();
     }
 
@@ -100,7 +138,7 @@ namespace sfplayer {
     std::shared_ptr<T> RingBuffer<T>::Read() {
         std::lock_guard<std::mutex> lock(mutex_);
         if (head_ != tail_) {
-            std::shared_ptr<T> t = _Read();
+            std::shared_ptr<T> t = UnsafeRead();
             cond_.notify_all();
             return t;
         } else {
@@ -115,19 +153,15 @@ namespace sfplayer {
             return head_ != tail_;
         }));
         
-        std::shared_ptr<T> t = _Read();
+        std::shared_ptr<T> t = UnsafeRead();
         cond_.notify_all();
         return t;
     }
 
     template<typename T>
-    size_t RingBuffer<T>::GetCapacity() {
+    size_t RingBuffer<T>::GetLength() {
         std::lock_guard<std::mutex> lock(mutex_);
-        if (head_ <= tail_) {
-            return tail_ - head_;
-        } else {
-            return size_ - head_ + tail_;
-        }
+        return UnsafeGetLength();
     }
 
     template<typename T>
@@ -138,7 +172,6 @@ namespace sfplayer {
             head_ %= size_;
         }
     }
-
 }
 
 

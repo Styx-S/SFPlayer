@@ -29,7 +29,9 @@
     _player = std::make_shared<sfplayer::SFPlayer>();
     _render = std::make_shared<sfplayer::Render>();
     _audioRenderImpl = std::make_shared<sfplayer::SDLAudioRender>();
+    _audioRenderImpl->SetMaster(_render);
     _videoRenderImpl = std::make_shared<SFPMetalVideoRender>();
+    _videoRenderImpl->SetMaster(_render);
     _render->SetAudioRenderImpl(_audioRenderImpl);
     _render->SetVideoRenderImpl(_videoRenderImpl);
     _player->SetRender(_render);

@@ -24,10 +24,19 @@ namespace sfplayer {
 
 	const float width = 1600;
 	const float height = 900;
+
+    std::shared_ptr<SDLRender> SDLRender::NextInstance() {
+        std::shared_ptr<SDLRender> render = std::make_shared<SDLRender>();
+        render->audio_render_impl_ = std::make_shared<SDLAudioRender>();
+        render->video_render_impl_ = std::make_shared<SDLVideoRender>();
+        
+        render->audio_render_impl_->SetMaster(render);
+        render->video_render_impl_->SetMaster(render);
+        return render;
+    }
+
 	SDLRender::SDLRender() {
         checkInitSDL();
-        audio_render_impl_ = std::make_shared<SDLAudioRender>();
-        video_render_impl_ = std::make_shared<SDLVideoRender>();
 	}
 
 
@@ -104,13 +113,18 @@ namespace sfplayer {
         std::shared_ptr<MediaFrame> frame = render->audio_buffer_.Read();
 		if (frame) {
 			//printf("render audio, last: %ld\n", render->audio_queue_.size());
-			SDL_MixAudio(stream, frame->audio_data, frame->audio_data_size, SDL_MIX_MAXVOLUME);
+			SDL_MixAudio(stream, frame->audio_data, 4096, SDL_MIX_MAXVOLUME);
+            
+            if (auto master = render->master_.lock()) {
+                printf("[sfplayer]commmit audio pts:%lld\n", frame->pts);
+                master->UpdateLastAudioPts(frame->pts);
+            }
 		}
 	}
 
 #pragma mark - SDLVideoRender
     SDLVideoRender::SDLVideoRender()
-    : video_buffer_(10) {
+    : IVideoRenderInterface(10) {
         checkInitSDL();
     }
 
@@ -137,7 +151,6 @@ namespace sfplayer {
             //SDL_RenderSetLogicalSize(render_, frame->frame_->width, frame->frame_->height);
             texture_ = SDL_CreateTexture(render_, SDL_PIXELFORMAT_YV12, SDL_TEXTUREACCESS_TARGET, frame->frame_->width, frame->frame_->height);
         }
-        //printf("render frame, last:%ld", video_queue_.size());
         SDL_SetRenderDrawColor(render_, 0x11, 0x11, 0x11, 0xff);
         SDL_RenderClear(render_);
         SDL_UpdateYUVTexture(texture_,

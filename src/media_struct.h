@@ -12,7 +12,9 @@ namespace sfplayer {
         MediaType type;
         MediaFrame(MediaType t) {
             type = t;
-            frame_ = av_frame_alloc();
+            if (type == video) {
+                frame_ = av_frame_alloc();
+            }
         }
         ~MediaFrame() {
             if (frame_) {
@@ -22,17 +24,22 @@ namespace sfplayer {
                 }
                 av_frame_free(&frame_);
             }
-//            if (audio_data) {
-//                delete [] audio_data;
-//                audio_data = nullptr;
-//            }
+            if (audio_data) {
+                av_freep(&audio_data);
+                audio_data_size = 0;
+            }
         }
         
-        // audio only
-        uint8_t *audio_data = nullptr;
-        int audio_data_size = 0;
+        int64_t pts;
         
-        // video & audio
+        // audio only
+        uint8_t *audio_data = nullptr;  // 音频数据
+        int audio_data_size = 0;        // 音频数据大小
+        int channels = 0;               // 通道数
+        int sample_rate = 0;            // 采样率
+        int nb_samples = 0;             // 采样数
+        
+        // video only
         AVFrame *frame_ = nullptr;
 	};
 

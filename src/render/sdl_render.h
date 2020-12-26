@@ -45,16 +45,15 @@ namespace sfplayer {
         SDL_Window *window_ = NULL;
         SDL_Renderer *render_ = NULL;
         SDL_Texture *texture_ = NULL;
-        
-        RingBuffer<MediaFrame> video_buffer_;
     };
 
 
 	class SDLRender : public Render {
 	public:
-		SDLRender();
+        SDLRender();
 		~SDLRender();
-        
+    
+        static std::shared_ptr<SDLRender> NextInstance();
         
         /// 等待结束
         void WaitLoop();

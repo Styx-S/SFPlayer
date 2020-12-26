@@ -28,7 +28,6 @@ public:
     bool Resume() override { return false; }
     
     void TransportParameter(std::shared_ptr<Parameter> p) override {}
-    void PushVideoFrame(std::shared_ptr<MediaFrame> frame) override;
     int GetCachedVideoSize() override { return -1; }
     
     MTKView *GetRenderView();
@@ -43,9 +42,7 @@ private:
     __strong SFPMTKViewDelegateProxy *render_view_delegate_;
     
     void InitMetal();
-    bool SetFragmentTexture(id<MTLRenderCommandEncoder> encoder);
-    
-    std::shared_ptr<MediaFrame> last_frame_;
+    bool SetFragmentTexture(id<MTLRenderCommandEncoder> encoder, std::shared_ptr<MediaFrame> frame);
 };
 
 

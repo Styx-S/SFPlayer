@@ -8,6 +8,7 @@
 #include <queue>
 #include <thread>
 #include <mutex>
+#include <functional>
 
 extern "C" {
 #include <libavformat/avformat.h>
@@ -16,5 +17,7 @@ extern "C" {
 #include <libswscale/swscale.h>
 #include <libavutil/imgutils.h>
 }
+
+#include "components/ring_buffer.h"
 
 #endif

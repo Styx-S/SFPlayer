@@ -29,11 +29,13 @@ namespace sfplayer {
         AVCodecContext *video_codec_context_ = NULL;
         SwrContext *audio_swr_context_ = NULL;
         SwsContext *video_sws_context_ = NULL;
+        AVRational audio_stream_timebase_;
+        AVRational video_stream_timebase_;
         
         std::shared_ptr<std::thread> audio_worker_;
         std::shared_ptr<std::thread> video_worker_;
         RingBuffer<MediaPacket> audio_packet_buffer;
-        RingBuffer<MediaPacket> video_packet_buffer;\
+        RingBuffer<MediaPacket> video_packet_buffer;
         
         bool first_audio_frame_ = true;
         

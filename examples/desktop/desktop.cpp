@@ -5,7 +5,7 @@ int main()
 {
     
 	std::shared_ptr<sfplayer::SFPlayer> player = std::make_shared<sfplayer::SFPlayer>();
-	std::shared_ptr<sfplayer::SDLRender> render = std::make_shared<sfplayer::SDLRender>();
+    std::shared_ptr<sfplayer::SDLRender> render = sfplayer::SDLRender::NextInstance();
 
 	player->SetRender(render);
 	if (player->Play("http://devimages.apple.com.edgekey.net/streaming/examples/bipbop_4x3/gear2/prog_index.m3u8")) {

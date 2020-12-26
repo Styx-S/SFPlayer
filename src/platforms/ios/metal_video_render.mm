@@ -7,12 +7,13 @@
 
 #include "metal_video_render.h"
 
-SFPMetalVideoRender::SFPMetalVideoRender() {
-    render_view_ = nil;
-    InitMetal();
+SFPMetalVideoRender::SFPMetalVideoRender()
+: SFPMetalVideoRender(nil) {
+    
 }
 
-SFPMetalVideoRender::SFPMetalVideoRender(MTKView *mtkView) {
+SFPMetalVideoRender::SFPMetalVideoRender(MTKView *mtkView)
+: IVideoRenderInterface(10) {
     render_view_ = mtkView;
     InitMetal();
 }
@@ -27,10 +28,6 @@ bool SFPMetalVideoRender::Start() {
 
 bool SFPMetalVideoRender::Stop() {
     return true;
-}
-
-void SFPMetalVideoRender::PushVideoFrame(std::shared_ptr<MediaFrame> frame) {
-    last_frame_ = frame;
 }
 
 MTKView* SFPMetalVideoRender::GetRenderView() {
@@ -118,8 +115,7 @@ void SFPMetalVideoRender::InitMetal() {
     render_view_.delegate = render_view_delegate_;
 }
 
-bool SFPMetalVideoRender::SetFragmentTexture(id<MTLRenderCommandEncoder> encoder) {
-    std::shared_ptr<MediaFrame> frame = last_frame_;
+bool SFPMetalVideoRender::SetFragmentTexture(id<MTLRenderCommandEncoder> encoder, std::shared_ptr<MediaFrame> frame) {
     
     if (!(
           frame
@@ -166,10 +162,11 @@ bool SFPMetalVideoRender::SetFragmentTexture(id<MTLRenderCommandEncoder> encoder
 }
 
 void SFPMetalVideoRender::_DrawNow() {
+    std::shared_ptr<MediaFrame> pickFrame = PickSyncFrame();
     id<MTLCommandBuffer> commandBuffer = [render_command_queue_ commandBuffer];
     id<MTLRenderCommandEncoder> renderCommandEncoder = [commandBuffer renderCommandEncoderWithDescriptor:render_view_.currentRenderPassDescriptor];
     
-    if (!SetFragmentTexture(renderCommandEncoder)) {
+    if (!SetFragmentTexture(renderCommandEncoder, pickFrame)) {
         [renderCommandEncoder endEncoding];
         return;
     }

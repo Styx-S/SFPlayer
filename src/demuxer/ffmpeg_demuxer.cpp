@@ -39,7 +39,9 @@ namespace sfplayer {
         }
         std::shared_ptr<DecoderParameter> decoderPar = std::make_shared<DecoderParameter>();
         decoderPar->audio_codecpar = audioStream->codecpar;
+        decoderPar->audio_stream_timebase = audioStream->time_base;
         decoderPar->video_codecpar = videoStream->codecpar;
+        decoderPar->video_stream_timebase = videoStream->time_base;
         decoder_->TransportParameter(decoderPar);
     }
 
