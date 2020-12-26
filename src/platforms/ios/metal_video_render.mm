@@ -27,6 +27,10 @@ bool SFPMetalVideoRender::Start() {
 }
 
 bool SFPMetalVideoRender::Stop() {
+    {
+        SYNCHONIZED(state_mutex_);
+        running_ = false;
+    }
     render_view_.delegate = nil;
     return true;
 }
@@ -163,6 +167,13 @@ bool SFPMetalVideoRender::SetFragmentTexture(id<MTLRenderCommandEncoder> encoder
 }
 
 void SFPMetalVideoRender::_DrawNow() {
+    if (!({
+        SYNCHONIZED(state_mutex_);
+        running_;
+    })) {
+        return;
+    }
+
     std::shared_ptr<MediaFrame> pickFrame = PickSyncFrame();
     id<MTLCommandBuffer> commandBuffer = [render_command_queue_ commandBuffer];
     id<MTLRenderCommandEncoder> renderCommandEncoder = [commandBuffer renderCommandEncoderWithDescriptor:render_view_.currentRenderPassDescriptor];

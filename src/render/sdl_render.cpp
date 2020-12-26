@@ -98,6 +98,11 @@ namespace sfplayer {
     }
 	
 	bool SDLAudioRender::Stop() {
+        {
+            SYNCHONIZED(state_mutex_);
+            running_ = false;
+        }
+        SDL_PauseAudio(1);
         return true;
 	}
 
@@ -111,7 +116,10 @@ namespace sfplayer {
 		SDLAudioRender *render = (SDLAudioRender *)udata;
 		SDL_memset(stream, 0, len);
         std::shared_ptr<MediaFrame> frame = render->audio_buffer_.Read();
-		if (frame) {
+        if (frame && ({
+            SYNCHONIZED(render->state_mutex_);
+            render->running_;
+        })) {
 			//printf("render audio, last: %ld\n", render->audio_queue_.size());
 			SDL_MixAudio(stream, frame->audio_data, 4096, SDL_MIX_MAXVOLUME);
             
@@ -139,14 +147,34 @@ namespace sfplayer {
         window_ = SDL_CreateWindow("SFPlayer", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
         render_ = SDL_CreateRenderer(window_, -1, SDL_RENDERER_ACCELERATED || SDL_RENDERER_PRESENTVSYNC);
     
+        worker_ = std::make_shared<std::thread>([this](){
+            while (({
+                std::lock_guard<std::mutex> lock(state_mutex_);
+                running_;
+            })) {
+                Draw();
+                SDL_Delay(10);
+            }
+        });
+        
         return true;
     }
 
     bool SDLVideoRender::Stop() {
+        {
+            SYNCHONIZED(state_mutex_);
+            running_ = false;
+        }
+        worker_->join();
+        worker_ = nullptr;
         return true;
     }
 
-    void SDLVideoRender::PushVideoFrame(std::shared_ptr<MediaFrame> frame) {
+    void SDLVideoRender::Draw() {
+        std::shared_ptr<MediaFrame> frame = PickSyncFrame();
+        if (frame == last_draw_frame_) {
+            return;
+        }
         if (!texture_) {
             //SDL_RenderSetLogicalSize(render_, frame->frame_->width, frame->frame_->height);
             texture_ = SDL_CreateTexture(render_, SDL_PIXELFORMAT_YV12, SDL_TEXTUREACCESS_TARGET, frame->frame_->width, frame->frame_->height);
@@ -163,6 +191,7 @@ namespace sfplayer {
                              frame->frame_->linesize[2]);
         SDL_RenderCopy(render_, texture_, NULL, NULL);
         SDL_RenderPresent(render_);
-        SDL_Delay(15);
+        
+        last_draw_frame_ = frame;
     }
 }

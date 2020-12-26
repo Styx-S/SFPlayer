@@ -39,12 +39,16 @@ namespace sfplayer {
         bool Resume() override { return false; }
         
         void TransportParameter(std::shared_ptr<Parameter> p) override {}
-        void PushVideoFrame(std::shared_ptr<MediaFrame> frame) override;
+        
         int GetCachedVideoSize() override { return -1; }
     private:
         SDL_Window *window_ = NULL;
         SDL_Renderer *render_ = NULL;
         SDL_Texture *texture_ = NULL;
+        
+        std::shared_ptr<std::thread> worker_;
+        std::shared_ptr<MediaFrame> last_draw_frame_;
+        void Draw();
     };
 
 

@@ -47,7 +47,10 @@ namespace sfplayer {
 
     bool FFmpegDemuxer::Start() {
         worker_ = std::make_shared<std::thread>([this](){
-            while (running_) {
+            while (({
+                std::lock_guard<std::mutex> lock(state_mutex_);
+                running_;
+            })) {
                 std::shared_ptr<MediaPacket> packet = std::make_shared<MediaPacket>();
                 av_read_frame(fmt_ctx_, packet->packet_);
                 
@@ -67,7 +70,11 @@ namespace sfplayer {
     }
 
     bool FFmpegDemuxer::Stop() {
-        running_ = false;
+        {
+            SYNCHONIZED(state_mutex_);
+            running_ = false;
+        }
+        
         worker_->join();
         worker_ = nullptr;
         

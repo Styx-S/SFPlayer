@@ -79,7 +79,10 @@ namespace sfplayer {
     }
 
     bool FFmpegDeocder::Stop() {
-        running_ = false;
+        {
+            SYNCHONIZED(state_mutex_);
+            running_ = false;
+        }
         audio_worker_->join();
         audio_worker_ = nullptr;
         video_worker_->join();
@@ -101,7 +104,10 @@ namespace sfplayer {
     }
 
     void FFmpegDeocder::DecodeAudio() {
-        while (running_) {
+        while (({
+            std::lock_guard<std::mutex> lock(state_mutex_);
+            running_;
+        })) {
             std::shared_ptr<MediaPacket> packet = audio_packet_buffer.Read();
             if (!packet) {
                 continue;
@@ -133,7 +139,6 @@ namespace sfplayer {
             
             memset(frame->audio_data, 0x00, frame->audio_data_size);
             swr_convert(audio_swr_context_, &frame->audio_data, output_samples, (const uint8_t **)srcFrame->data, srcFrame->nb_samples);
-            swr_convert_frame(audio_swr_context_, frame->frame_, srcFrame);
             av_frame_free(&srcFrame);
             
             if (first_audio_frame_) {

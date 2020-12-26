@@ -20,4 +20,7 @@ extern "C" {
 
 #include "components/ring_buffer.h"
 
+
+#define SYNCHONIZED(__mutex__) std::lock_guard<std::mutex> __L_K__(__mutex__)
+
 #endif
