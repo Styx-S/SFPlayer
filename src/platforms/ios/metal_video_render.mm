@@ -27,6 +27,7 @@ bool SFPMetalVideoRender::Start() {
 }
 
 bool SFPMetalVideoRender::Stop() {
+    render_view_.delegate = nil;
     return true;
 }
 

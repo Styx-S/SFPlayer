@@ -132,6 +132,7 @@ namespace sfplayer {
         
         UnsafeWrite(t);
         cond_.notify_all();
+        return true;
     }
 
     template<typename T>

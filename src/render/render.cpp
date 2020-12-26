@@ -44,7 +44,7 @@ namespace sfplayer {
         }
         
         if (picked) {
-            printf("[sflpayer][sync]pick video pts: %lld\n", picked->pts);
+            printf("[sfplayer][sync]pick video pts: %lld\n", picked->pts);
             last_frame_ = picked;
         }
         return picked;
