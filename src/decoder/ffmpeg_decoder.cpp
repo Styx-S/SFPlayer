@@ -121,21 +121,14 @@ namespace sfplayer {
                 continue;
             }
             
-            // TODO: 下面一段代码导致没法播放声音，但是我想知道为什么
-            //                size_t len = output_size * 2 * 2;
-            //                uint8_t *out_buffer = new uint8_t[len];
-            //                memset(out_buffer, 0x0, len);
-            //                swr_convert(audio_swr_context_, &out_buffer, output_size, (const uint8_t **)srcFrame->data, srcFrame->nb_samples);
             std::shared_ptr<MediaFrame> frame = std::make_shared<MediaFrame>(MediaType::audio);
             int output_samples = swr_get_out_samples(audio_swr_context_, srcFrame->nb_samples);
-            frame->audio_data_size = output_samples * 2 * 2;
+            frame->audio_data_size = output_samples * srcFrame->channels * 2;
             frame->audio_data = (uint8_t *)av_malloc(frame->audio_data_size);
             frame->channels = 2;
             frame->sample_rate = srcFrame->sample_rate;
             frame->nb_samples = srcFrame->nb_samples;
             frame->pts = av_q2d(audio_codec_context_->time_base) * srcFrame->pts * 1000;
-            
-            int expect_size = av_samples_get_buffer_size(NULL, srcFrame->channels, srcFrame->nb_samples, AV_SAMPLE_FMT_S16, 1);
             
             memset(frame->audio_data, 0x00, frame->audio_data_size);
             swr_convert(audio_swr_context_, &frame->audio_data, output_samples, (const uint8_t **)srcFrame->data, srcFrame->nb_samples);

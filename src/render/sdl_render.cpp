@@ -121,7 +121,7 @@ namespace sfplayer {
             render->running_;
         })) {
 			//printf("render audio, last: %ld\n", render->audio_queue_.size());
-			SDL_MixAudio(stream, frame->audio_data, 4096, SDL_MIX_MAXVOLUME);
+			SDL_MixAudio(stream, frame->audio_data, frame->audio_data_size, SDL_MIX_MAXVOLUME);
             
             if (auto master = render->master_.lock()) {
                 printf("[sfplayer]commmit audio pts:%lld\n", frame->pts);
