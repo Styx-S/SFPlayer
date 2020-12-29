@@ -35,10 +35,14 @@ namespace sfplayer {
 		render_->Stop();
 	}
 	void SFPlayer::Pause() {
-
+        demuxer_->Pause();
+        decoder_->Pause();
+        render_->Pause();
 	}
 	void SFPlayer::Resume() {
-
+        demuxer_->Resume();
+        decoder_->Resume();
+        render_->Resume();
 	}
 	void SFPlayer::Seek(float seconds) {
 

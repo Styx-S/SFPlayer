@@ -48,7 +48,9 @@ namespace sfplayer {
     bool FFmpegDemuxer::Start() {
         worker_ = std::make_shared<std::thread>([this](){
             while (({
-                std::lock_guard<std::mutex> lock(state_mutex_);
+                CONDITION_WAIT(state_cond_, state_mutex_, [this](){
+                    return !pause_;
+                });
                 running_;
             })) {
                 std::shared_ptr<MediaPacket> packet = std::make_shared<MediaPacket>();
@@ -73,6 +75,7 @@ namespace sfplayer {
         {
             SYNCHONIZED(state_mutex_);
             running_ = false;
+            state_cond_.notify_all();
         }
         
         worker_->join();

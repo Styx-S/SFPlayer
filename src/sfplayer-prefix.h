@@ -16,5 +16,8 @@
 
 
 #define SYNCHONIZED(__mutex__) std::lock_guard<std::mutex> __L_K__(__mutex__)
+#define CONDITION_WAIT(__cond__, __mutex__, __lambda__) \
+    std::unique_lock<std::mutex> __L_K__(__mutex__); \
+    __cond__.wait(__L_K__, __lambda__)
 
 #endif

@@ -105,7 +105,9 @@ namespace sfplayer {
 
     void FFmpegDeocder::DecodeAudio() {
         while (({
-            std::lock_guard<std::mutex> lock(state_mutex_);
+            CONDITION_WAIT(state_cond_, state_mutex_, [this](){
+                return !pause_;
+            });
             running_;
         })) {
             std::shared_ptr<MediaPacket> packet = audio_packet_buffer.Read();
@@ -147,7 +149,12 @@ namespace sfplayer {
     }
 
     void FFmpegDeocder::DecodeVideo() {
-        while (running_) {
+        while (({
+            CONDITION_WAIT(state_cond_, state_mutex_, [this](){
+                return !pause_;
+            });
+            running_;
+        })) {
             std::shared_ptr<MediaPacket> packet = video_packet_buffer.Read();
             if (!packet) {
                 continue;

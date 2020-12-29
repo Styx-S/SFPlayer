@@ -26,8 +26,6 @@ namespace sfplayer {
         // IPlayerElementInterface
         bool Start() override;
         bool Stop() override;
-        bool Pause() override { return false; }
-        bool Resume() override { return false; }
         // 设置当前模块所需的参数
         void TransportParameter(std::shared_ptr<Parameter> p) override;
         

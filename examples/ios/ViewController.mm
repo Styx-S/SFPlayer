@@ -18,10 +18,15 @@
 }
 
 @property(nonatomic, strong) UIView *playerView;
+@property(nonatomic, assign) BOOL playerPaused;
 
 @end
 
 @implementation ViewController
+
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -38,6 +43,19 @@
     _playerView = _videoRenderImpl->GetRenderView();
     _playerView.backgroundColor = [UIColor grayColor];
     [self.view addSubview:_playerView];
+    
+    [_playerView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(pauseOrResume)]];
+    
+    __weak __typeof(self) weakSelf = self;
+    [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+        __strong __typeof(self) strongSelf = weakSelf;
+        strongSelf->_player->Pause();
+        
+    }];
+    [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+        __strong __typeof(self) strongSelf = weakSelf;
+        strongSelf->_player->Resume();
+    }];
 }
 
 - (void)viewDidLayoutSubviews {
@@ -49,6 +67,15 @@
 - (void)viewDidAppear:(BOOL)animated {
     _player->Play("http://devimages.apple.com.edgekey.net/streaming/examples/bipbop_4x3/gear2/prog_index.m3u8");
     _player->Start();
+}
+
+- (void)pauseOrResume {
+    if (self.playerPaused) {
+        _player->Resume();
+    } else {
+        _player->Pause();
+    }
+    self.playerPaused = !self.playerPaused;
 }
 
 
