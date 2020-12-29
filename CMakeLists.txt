@@ -122,6 +122,8 @@ set(IOS_PLATFORM_DIR ${SFPlayer_SRC_DIR}/platforms/ios)
 set(IOS_PLATFORM_FILES 
 	${IOS_PLATFORM_DIR}/metal_video_render.h
 	${IOS_PLATFORM_DIR}/metal_video_render.mm
+	${IOS_PLATFORM_DIR}/apple_audio_render.h
+	${IOS_PLATFORM_DIR}/apple_audio_render.mm
 	)
 set(METAL_SHADER
 	${IOS_PLATFORM_DIR}/shader.metal)

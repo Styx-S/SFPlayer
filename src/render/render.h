@@ -1,7 +1,6 @@
 #pragma once
 
 #include "player_element_interface.h"
-#include "media_struct.h"
 
 namespace sfplayer {
     

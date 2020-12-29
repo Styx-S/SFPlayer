@@ -9,7 +9,7 @@
 #define decoder_interface_h
 
 #include "player_element_interface.h"
-#include "media_struct.h"
+
 #include "render.h"
 
 namespace sfplayer {

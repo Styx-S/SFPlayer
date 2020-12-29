@@ -10,13 +10,7 @@
 #include <mutex>
 #include <functional>
 
-extern "C" {
-#include <libavformat/avformat.h>
-#include <libavcodec/avcodec.h>
-#include <libswresample/swresample.h>
-#include <libswscale/swscale.h>
-#include <libavutil/imgutils.h>
-}
+#include "media_struct.h"
 
 #include "components/ring_buffer.h"
 

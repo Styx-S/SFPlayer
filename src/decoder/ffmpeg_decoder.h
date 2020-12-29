@@ -11,6 +11,14 @@
 #include "decoder_interface.h"
 #include "ring_buffer.h"
 
+extern "C" {
+#include <libavformat/avformat.h>
+#include <libavcodec/avcodec.h>
+#include <libswresample/swresample.h>
+#include <libswscale/swscale.h>
+#include <libavutil/imgutils.h>
+}
+
 namespace sfplayer {
     class FFmpegDeocder : public IDecoderInterface {
     public:

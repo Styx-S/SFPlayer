@@ -8,12 +8,12 @@
 #import "ViewController.h"
 
 #include "sfplayer.h"
-#include "sdl_render.h"
+#include "apple_audio_render.h"
 #include "metal_video_render.h"
 @interface ViewController () {
     std::shared_ptr<sfplayer::SFPlayer> _player;
     std::shared_ptr<sfplayer::Render> _render;
-    std::shared_ptr<sfplayer::SDLAudioRender> _audioRenderImpl;
+    std::shared_ptr<sfplayer::IAudioRenderInterface> _audioRenderImpl;
     std::shared_ptr<SFPMetalVideoRender> _videoRenderImpl;
 }
 
@@ -28,7 +28,7 @@
     // Do any additional setup after loading the view.
     _player = std::make_shared<sfplayer::SFPlayer>();
     _render = std::make_shared<sfplayer::Render>();
-    _audioRenderImpl = std::make_shared<sfplayer::SDLAudioRender>();
+    _audioRenderImpl = std::static_pointer_cast<sfplayer::IAudioRenderInterface>(std::make_shared<SFPAppleAudioRender>());
     _audioRenderImpl->SetMaster(_render);
     _videoRenderImpl = std::make_shared<SFPMetalVideoRender>();
     _videoRenderImpl->SetMaster(_render);

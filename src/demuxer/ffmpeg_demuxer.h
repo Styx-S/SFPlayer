@@ -11,6 +11,14 @@
 #include "player_element_interface.h"
 #include "decoder_interface.h"
 
+extern "C" {
+#include <libavformat/avformat.h>
+#include <libavcodec/avcodec.h>
+#include <libswresample/swresample.h>
+#include <libswscale/swscale.h>
+#include <libavutil/imgutils.h>
+}
+
 namespace sfplayer {
     class FFmpegDemuxer : public IPlayerElementInterface {
     public:

@@ -8,6 +8,14 @@
 #ifndef parameter_h
 #define parameter_h
 
+extern "C" {
+#include <libavformat/avformat.h>
+#include <libavcodec/avcodec.h>
+#include <libswresample/swresample.h>
+#include <libswscale/swscale.h>
+#include <libavutil/imgutils.h>
+}
+
 namespace sfplayer {
     enum ParameterType : int {
         unknow = 0,
