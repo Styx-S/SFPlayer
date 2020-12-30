@@ -25,6 +25,11 @@ bool SFPAppleAudioRender::Stop() {
     return true;
 }
 
+bool SFPAppleAudioRender::Seek(int64_t milliseconds) {
+    frame_buffer_.Clear();
+    return true;
+}
+
 bool SFPAppleAudioRender::PushAudioFrame(std::shared_ptr<MediaFrame> frame) {
     return frame_buffer_.WaitAndWrite(frame);
 }

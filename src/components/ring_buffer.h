@@ -172,6 +172,7 @@ namespace sfplayer {
             buffer[head_++] = nullptr;
             head_ %= size_;
         }
+        cond_.notify_all();
     }
 }
 

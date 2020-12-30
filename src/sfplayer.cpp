@@ -45,7 +45,12 @@ namespace sfplayer {
         render_->Resume();
 	}
 	void SFPlayer::Seek(float seconds) {
-
+        Pause();
+        int64_t ms = (int64_t)(seconds * 1000);
+        demuxer_->Seek(ms);
+        decoder_->Seek(ms);
+        render_->Seek(ms);
+        Resume();
 	}
 
 	void SFPlayer::SetRender(std::shared_ptr<Render> render) {

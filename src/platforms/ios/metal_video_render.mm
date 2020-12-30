@@ -35,6 +35,10 @@ bool SFPMetalVideoRender::Stop() {
     return true;
 }
 
+bool SFPMetalVideoRender::Seek(int64_t milliseconds) {
+    frame_buffer_.Clear();
+}
+
 MTKView* SFPMetalVideoRender::GetRenderView() {
     return render_view_;
 }
@@ -173,8 +177,18 @@ void SFPMetalVideoRender::_DrawNow() {
     })) {
         return;
     }
+    
+    // 如果暂停了，则绘制之前那一帧
+    std::shared_ptr<MediaFrame> pickFrame = nullptr;
+    if (({
+        SYNCHONIZED(state_mutex_);
+        pause_;
+    })) {
+        pickFrame = last_frame_;
+    } else {
+        pickFrame = PickSyncFrame();
+    }
 
-    std::shared_ptr<MediaFrame> pickFrame = PickSyncFrame();
     id<MTLCommandBuffer> commandBuffer = [render_command_queue_ commandBuffer];
     id<MTLRenderCommandEncoder> renderCommandEncoder = [commandBuffer renderCommandEncoderWithDescriptor:render_view_.currentRenderPassDescriptor];
     

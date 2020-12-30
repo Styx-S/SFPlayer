@@ -18,6 +18,7 @@ namespace sfplayer {
         // IPlayerElementInterface
         virtual bool Start() = 0;
         virtual bool Stop() { running_ = false; return true; }
+        virtual bool Seek(int64_t  milliseconds) = 0;
         // 设置当前模块所需的参数
         virtual void TransportParameter(std::shared_ptr<Parameter> p) {}
         virtual void SetRender(std::shared_ptr<Render> render) { render_ = render; }

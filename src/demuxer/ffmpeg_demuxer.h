@@ -25,6 +25,7 @@ namespace sfplayer {
         // IPlayerElementInterface
         bool Start() override;
         bool Stop() override;
+        bool Seek(int64_t  milliseconds) override;
         void TransportParameter(std::shared_ptr<Parameter>p) override;
         
         void SetOutput(std::shared_ptr<IDecoderInterface> decoder);

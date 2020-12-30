@@ -26,6 +26,8 @@ namespace sfplayer {
             state_cond_.notify_all();
             return true;
         }
+        virtual bool Seek(int64_t  milliseconds) = 0;
+        
         // 设置当前模块所需的参数
         virtual void TransportParameter(std::shared_ptr<Parameter> p) {}
 	protected:

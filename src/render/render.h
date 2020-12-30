@@ -10,6 +10,7 @@ namespace sfplayer {
         //IPlayerElementInterface
         virtual bool Start() = 0;
         virtual bool Stop() = 0;
+        virtual bool Seek(int64_t  milliseconds) = 0;
         
         virtual void TransportParameter(std::shared_ptr<Parameter> p) {}
         virtual bool PushAudioFrame(std::shared_ptr<MediaFrame> frame) = 0;
@@ -27,6 +28,7 @@ namespace sfplayer {
         //IPlayerElementInterface
         virtual bool Start() = 0;
         virtual bool Stop() = 0;
+        virtual bool Seek(int64_t  milliseconds) = 0;
         
         virtual void TransportParameter(std::shared_ptr<Parameter> p) {}
         virtual void PushVideoFrame(std::shared_ptr<MediaFrame> frame) { frame_buffer_.WaitAndWrite(frame); }
@@ -60,6 +62,13 @@ namespace sfplayer {
         virtual bool Resume() override {
             return audio_render_impl_->Resume()
                 && video_render_impl_->Resume();
+        }
+        
+        virtual bool Seek(int64_t  milliseconds) override {
+            last_audio_pts = -1;
+            last_video_pts = -1;
+            return audio_render_impl_->Seek(milliseconds)
+                && video_render_impl_->Seek(milliseconds);
         }
         
         virtual void TransportParameter(std::shared_ptr<Parameter> p) override {

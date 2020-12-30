@@ -106,6 +106,21 @@ namespace sfplayer {
         return true;
 	}
 
+    bool SDLAudioRender::Pause() {
+        SDL_PauseAudio(1);
+        return IPlayerElementInterface::Pause();
+    }
+
+    bool SDLAudioRender::Resume() {
+        SDL_PauseAudio(0);
+        return IPlayerElementInterface::Resume();
+    }
+
+    bool SDLAudioRender::Seek(int64_t milliseconds) {
+        audio_buffer_.Clear();
+        return true;
+    }
+
 	bool SDLAudioRender::PushAudioFrame(std::shared_ptr<MediaFrame> frame) {
         return audio_buffer_.WaitAndWrite(frame);
 	}
@@ -149,7 +164,9 @@ namespace sfplayer {
     
         worker_ = std::make_shared<std::thread>([this](){
             while (({
-                std::lock_guard<std::mutex> lock(state_mutex_);
+                CONDITION_WAIT(state_cond_, state_mutex_, [this](){
+                    return !pause_;
+                });
                 running_;
             })) {
                 Draw();
@@ -168,6 +185,10 @@ namespace sfplayer {
         worker_->join();
         worker_ = nullptr;
         return true;
+    }
+
+    bool SDLVideoRender::Seek(int64_t milliseconds) {
+        frame_buffer_.Clear();
     }
 
     void SDLVideoRender::Draw() {

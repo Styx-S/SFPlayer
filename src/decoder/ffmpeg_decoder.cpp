@@ -90,6 +90,12 @@ namespace sfplayer {
 		return true;
     }
 
+    bool FFmpegDeocder::Seek(int64_t milliseconds) {
+        seek_pts_ = milliseconds;
+        audio_packet_buffer.Clear();
+        video_packet_buffer.Clear();
+    }
+
     void FFmpegDeocder::PushPacket(std::shared_ptr<MediaPacket> packet) {
         if (!(packet && packet->packet_)) {
             return;
@@ -131,6 +137,11 @@ namespace sfplayer {
             frame->sample_rate = srcFrame->sample_rate;
             frame->nb_samples = srcFrame->nb_samples;
             frame->pts = av_q2d(audio_codec_context_->time_base) * srcFrame->pts * 1000;
+            if (frame->pts < seek_pts_) {
+                // drop
+                av_frame_free(&srcFrame);
+                continue;;
+            }
             
             memset(frame->audio_data, 0x00, frame->audio_data_size);
             swr_convert(audio_swr_context_, &frame->audio_data, output_samples, (const uint8_t **)srcFrame->data, srcFrame->nb_samples);
@@ -174,6 +185,10 @@ namespace sfplayer {
             
             frame->pts = av_q2d(video_codec_context_->time_base) * srcFrame->pts * 1000;
             av_frame_free(&srcFrame);
+            if (frame->pts < seek_pts_) {
+                // drop
+                continue;;
+            }
             
             render_->PushVideoFrame(frame);
         }

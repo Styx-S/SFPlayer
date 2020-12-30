@@ -24,8 +24,7 @@ public:
     //IPlayerElementInterface
     bool Start() override;
     bool Stop() override;
-    bool Pause() override { return false; }
-    bool Resume() override { return false; }
+    virtual bool Seek(int64_t  milliseconds) override;
     
     void TransportParameter(std::shared_ptr<Parameter> p) override {}
     int GetCachedVideoSize() override { return -1; }

@@ -84,6 +84,18 @@ namespace sfplayer {
         return true;
     }
 
+    bool FFmpegDemuxer::Seek(int64_t milliseconds) {
+        double seconds = milliseconds * 1.0 / 1000;
+        av_seek_frame(fmt_ctx_,
+                      video_stream_index_,
+                      seconds / av_q2d(fmt_ctx_->streams[video_stream_index_]->time_base),
+                      AVSEEK_FLAG_BACKWARD);
+        av_seek_frame(fmt_ctx_,
+                      audio_stream_index_,
+                      seconds / av_q2d(fmt_ctx_->streams[audio_stream_index_]->time_base),
+                      AVSEEK_FLAG_BACKWARD);
+    }
+
     void FFmpegDemuxer::SetOutput(std::shared_ptr<IDecoderInterface> decoder) {
         decoder_ = decoder;
     }

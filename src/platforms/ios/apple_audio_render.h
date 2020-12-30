@@ -23,8 +23,7 @@ public:
     //IPlayerElementInterface
     bool Start() override;
     bool Stop() override;
-    bool Pause() override { return false; }
-    bool Resume() override { return false; }
+    virtual bool Seek(int64_t  milliseconds) override;
     
     void TransportParameter(std::shared_ptr<Parameter> p) override;
     bool PushAudioFrame(std::shared_ptr<MediaFrame> frame) override;
