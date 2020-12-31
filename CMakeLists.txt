@@ -184,6 +184,7 @@ file(GLOB SOURCES
 	"src/**/*.h" 
 	"include/*.h"
 	"include/**/*.h")
+source_group(TREE ${CMAKE_SOURCE_DIR} FILES ${SOURCES})
 
 if(DESKTOP)
 	add_executable(${PROJECT_NAME} ${SFPlayer_SOURCE_DIR}/examples/desktop/desktop.cpp ${SOURCES} ${IOS_PLATFORM_FILES})
