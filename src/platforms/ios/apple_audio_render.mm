@@ -13,7 +13,7 @@ constexpr int kFramesPerPacket = 1;
 constexpr int kBitsPerChannel = 16;
 
 SFPAppleAudioRender::SFPAppleAudioRender()
-: frame_buffer_(10) {
+: IAudioRenderInterface(10) {
     
 }
 
@@ -26,12 +26,8 @@ bool SFPAppleAudioRender::Stop() {
 }
 
 bool SFPAppleAudioRender::Seek(int64_t milliseconds) {
-    frame_buffer_.Clear();
+    audio_buffer_.Clear();
     return true;
-}
-
-bool SFPAppleAudioRender::PushAudioFrame(std::shared_ptr<MediaFrame> frame) {
-    return frame_buffer_.WaitAndWrite(frame);
 }
 
 #pragma mark - AudioQueue
@@ -60,8 +56,8 @@ void SFPAppleAudioRender::TransportParameter(std::shared_ptr<Parameter> p) {
     
     // 空数据塞入buffer
     for (int i = 0; i < kSFPAppleAudioRenderBufferSize; i++) {
-        status =  AudioQueueAllocateBuffer(audio_queue_, audio_buffer_size_, &audio_buffer_[i]);
-        AudioQueueCallback(this, audio_queue_, audio_buffer_[i]);
+        status =  AudioQueueAllocateBuffer(audio_queue_, audio_buffer_size_, &audio_queue_buffer_[i]);
+        AudioQueueCallback(this, audio_queue_, audio_queue_buffer_[i]);
     }
     AudioQueueStart(audio_queue_, NULL);
     return true;
@@ -69,7 +65,7 @@ void SFPAppleAudioRender::TransportParameter(std::shared_ptr<Parameter> p) {
 
 void SFPAppleAudioRender::AudioQueueCallback(void *user_data, AudioQueueRef audio_queue, AudioQueueBufferRef buffer) {
     SFPAppleAudioRender *render = (SFPAppleAudioRender *)user_data;
-    auto frame = render->frame_buffer_.Read();
+    auto frame = render->audio_buffer_.Read();
     
     void *data = NULL;
     int len = 0;

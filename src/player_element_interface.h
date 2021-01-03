@@ -1,6 +1,7 @@
 #pragma once
 
 #include "parameter.h"
+#include "player_event.h"
 
 namespace sfplayer {
 
@@ -30,10 +31,24 @@ namespace sfplayer {
         
         // 设置当前模块所需的参数
         virtual void TransportParameter(std::shared_ptr<Parameter> p) {}
+        
+        virtual void SetEventBus(std::weak_ptr<IEventBusInterface> eventBus) {
+            event_bus_ = eventBus;
+        }
+        virtual void PostEvent(std::shared_ptr<PlayerEvent> event) {
+            if (auto bus = event_bus_.lock()) {
+                bus->PostEvent(event);
+            }
+        }
+        virtual void PostEvent(PlayerEventID eventId, std::string msg = "") {
+            PostEvent(std::make_shared<PlayerEvent>(eventId, msg));
+        }
+        
 	protected:
 		bool running_ = true;
         bool pause_ = false;
         std::mutex state_mutex_;
         std::condition_variable state_cond_;
+        std::weak_ptr<IEventBusInterface> event_bus_;
 	};
 }

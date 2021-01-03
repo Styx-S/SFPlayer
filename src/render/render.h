@@ -7,19 +7,23 @@ namespace sfplayer {
     class Render;
     class IAudioRenderInterface : public IPlayerElementInterface {
     public:
+        IAudioRenderInterface(size_t bufferSize) : audio_buffer_(bufferSize) {}
         //IPlayerElementInterface
         virtual bool Start() = 0;
         virtual bool Stop() = 0;
         virtual bool Seek(int64_t  milliseconds) = 0;
         
         virtual void TransportParameter(std::shared_ptr<Parameter> p) {}
-        virtual bool PushAudioFrame(std::shared_ptr<MediaFrame> frame) = 0;
+        virtual bool PushAudioFrame(std::shared_ptr<MediaFrame> frame) {
+            audio_buffer_.WaitAndWrite(frame);
+        }
         virtual int GetCachedAudioSize() { return -1; }
         
         void SetMaster(std::weak_ptr<Render> master) { master_ = master; }
         
     protected:
         std::weak_ptr<Render> master_;
+        RingBuffer<MediaFrame> audio_buffer_;
     };
 
     class IVideoRenderInterface : public IPlayerElementInterface {
@@ -41,6 +45,7 @@ namespace sfplayer {
         std::weak_ptr<Render> master_;
         RingBuffer<MediaFrame> frame_buffer_;
         
+        bool first_frame_ = true;
         std::shared_ptr<MediaFrame> last_frame_;
     };
 
@@ -74,6 +79,12 @@ namespace sfplayer {
         virtual void TransportParameter(std::shared_ptr<Parameter> p) override {
             audio_render_impl_->TransportParameter(p);
             video_render_impl_->TransportParameter(p);
+        }
+        
+        virtual void SetEventBus(std::weak_ptr<IEventBusInterface> eventBus) override {
+            event_bus_ = eventBus;
+            audio_render_impl_->SetEventBus(eventBus);
+            video_render_impl_->SetEventBus(eventBus);
         }
 
         virtual bool PushAudioFrame(std::shared_ptr<MediaFrame> frame) {

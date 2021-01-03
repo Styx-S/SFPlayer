@@ -23,7 +23,6 @@ namespace sfplayer {
         bool PushAudioFrame(std::shared_ptr<MediaFrame> frame) override;
         int GetCachedAudioSize() override { return -1; }
     private:
-        RingBuffer<MediaFrame> audio_buffer_;
         std::mutex audio_queue_mutex_;
 
         static void ReadAudioFrameCallback(void *udata, Uint8 *stream, int len);

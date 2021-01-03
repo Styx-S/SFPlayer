@@ -9,6 +9,7 @@
 #include <thread>
 #include <mutex>
 #include <functional>
+#include <map>
 
 #include "media_struct.h"
 

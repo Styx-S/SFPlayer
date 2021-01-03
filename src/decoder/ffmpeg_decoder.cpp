@@ -26,7 +26,7 @@ namespace sfplayer {
         // Audio codec context
         AVCodec *codec = avcodec_find_decoder(decoderPar->audio_codecpar->codec_id);
         if (!codec) {
-            printf("find audio decoder error\n");
+            PostEvent(DecoderCreateError, "find audio decoder error");
 			return;
         }
         audio_codec_context_ = avcodec_alloc_context3(codec);
@@ -36,7 +36,7 @@ namespace sfplayer {
         // Video codec context
         codec = avcodec_find_decoder(decoderPar->video_codecpar->codec_id);
         if (!codec) {
-            printf("find video decoder error\n");
+            PostEvent(DecoderCreateError, "find video decoder error");
 			return;
         }
         video_codec_context_ = avcodec_alloc_context3(codec);
@@ -56,7 +56,8 @@ namespace sfplayer {
             NULL);
         swr_init(audio_swr_context_);
         if (!swr_is_initialized(audio_swr_context_)) {
-            
+            PostEvent(DecoderCreateError, "create swr context error");
+            return;
         }
         
         // Video rescale context YUV420P
@@ -69,6 +70,11 @@ namespace sfplayer {
             AV_PIX_FMT_YUV420P,
             SWS_BILINEAR,
             NULL, NULL, NULL);
+        if (video_sws_context_ == NULL) {
+            PostEvent(DecoderCreateError, "create sws context error");
+            return;
+        }
+        PostEvent(DecoderInitSucceed);
     }
 
     bool FFmpegDeocder::Start() {

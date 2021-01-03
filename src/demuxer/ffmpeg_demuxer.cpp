@@ -15,12 +15,12 @@ namespace sfplayer {
         std::shared_ptr<PlayParameter> playPar = std::static_pointer_cast<PlayParameter>(p);
         int ret = avformat_open_input(&fmt_ctx_, playPar->play_url.c_str(), NULL, NULL);
         if (ret < 0) {
-            printf("open input error\n");
+            PostEvent(DemuxerInitStreamError, "open input error");
 			return;
         }
         ret = avformat_find_stream_info(fmt_ctx_, NULL);
         if (ret < 0) {
-            printf("find stream info error\n");
+            PostEvent(DemuxerInitStreamError, "find stream info error");
 			return;
         }
         

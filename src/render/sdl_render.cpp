@@ -61,7 +61,7 @@ namespace sfplayer {
 #pragma mark - SDLAudioRender
 
     SDLAudioRender::SDLAudioRender()
-    : audio_buffer_(20) {
+    : IAudioRenderInterface(10) {
         checkInitSDL();
     }
 
@@ -120,12 +120,6 @@ namespace sfplayer {
         audio_buffer_.Clear();
         return true;
     }
-
-	bool SDLAudioRender::PushAudioFrame(std::shared_ptr<MediaFrame> frame) {
-        return audio_buffer_.WaitAndWrite(frame);
-	}
-
-	
 
 	void SDLAudioRender::ReadAudioFrameCallback(void *udata, Uint8 *stream, int len) {
 		SDLAudioRender *render = (SDLAudioRender *)udata;

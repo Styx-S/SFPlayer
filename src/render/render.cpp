@@ -20,6 +20,12 @@ namespace sfplayer {
         if (!render) {
             // 不使用音画同步
             last_frame_ = frame_buffer_.Read();
+            if (last_frame_) {
+                if (first_frame_) {
+                    first_frame_ = false;
+                    PostEvent(RenderGetsFirstVideoFrame);
+                }
+            }
             return last_frame_;
         }
         
@@ -46,6 +52,10 @@ namespace sfplayer {
         if (picked) {
             printf("[sfplayer][sync]pick video pts: %lld\n", picked->pts);
             last_frame_ = picked;
+            if (first_frame_) {
+                first_frame_ = false;
+                PostEvent(RenderGetsFirstVideoFrame);
+            }
         }
         return picked;
     }

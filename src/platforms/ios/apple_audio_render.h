@@ -26,14 +26,12 @@ public:
     virtual bool Seek(int64_t  milliseconds) override;
     
     void TransportParameter(std::shared_ptr<Parameter> p) override;
-    bool PushAudioFrame(std::shared_ptr<MediaFrame> frame) override;
     
 private:
     AudioQueueRef audio_queue_;
     AudioStreamBasicDescription stream_description_;
-    AudioQueueBufferRef audio_buffer_[kSFPAppleAudioRenderBufferSize];
+    AudioQueueBufferRef audio_queue_buffer_[kSFPAppleAudioRenderBufferSize];
     int audio_buffer_size_;
-    RingBuffer<MediaFrame> frame_buffer_;
     
     static void AudioQueueCallback(void *user_data,
                                    AudioQueueRef audio_queue,
